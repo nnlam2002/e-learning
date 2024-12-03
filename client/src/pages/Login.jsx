@@ -64,18 +64,25 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if(registerIsSuccess && registerData){
-      toast.success(registerData.message || "Signup successful.")
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup successful.");
     }
-    if(registerError){
-      toast.error(registerError.data.message || "Signup Failed");
+  
+    if (registerError) {
+      const errorMessage =
+        registerError?.data?.message || "Signup Failed";
+      toast.error(errorMessage);
     }
-    if(loginIsSuccess && loginData){
+  
+    if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "Login successful.");
       navigate("/");
     }
-    if(loginError){ 
-      toast.error(loginError.data.message || "login Failed");
+  
+    if (loginError) {
+      const errorMessage =
+        loginError?.data?.message || "Login Failed";
+      toast.error(errorMessage);
     }
   }, [
     loginIsLoading,
@@ -85,6 +92,7 @@ const Login = () => {
     loginError,
     registerError,
   ]);
+  
 
   return (
     <div className="flex items-center w-full justify-center mt-20">
