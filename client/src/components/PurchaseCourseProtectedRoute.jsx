@@ -8,6 +8,8 @@ const PurchaseCourseProtectedRoute = ({children}) => {
 
     if(isLoading) return <p>Loading...</p>
 
+    console.log(data)
+
     return data?.purchased ? children : <Navigate to={`/course-detail/${courseId}`}/>
 }
 export default PurchaseCourseProtectedRoute;
