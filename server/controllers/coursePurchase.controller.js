@@ -14,14 +14,6 @@ export const createCheckoutSession = async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ message: "Course not found!" });
 
-    // Create a new course purchase record
-    const newPurchase = new CoursePurchase({
-      courseId,
-      userId,
-      amount: course.coursePrice,
-      status: "pending",
-    });
-
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -56,9 +48,24 @@ export const createCheckoutSession = async (req, res) => {
         .json({ success: false, message: "Error while creating session" });
     }
 
-    // Save the purchase record
-    newPurchase.paymentId = session.id;
-    await newPurchase.save();
+    const checkoutCourse = await CoursePurchase.findOne({userId});
+    if(!checkoutCourse) {
+        // Create a new course purchase record
+        const newPurchase = new CoursePurchase({
+          courseId,
+          userId,
+          amount: course.coursePrice,
+          status: "pending",
+        });
+        // Save the purchase record
+        newPurchase.paymentId = session.id;
+        await newPurchase.save();
+    }
+    else {
+      // Create a new course purchase record
+      checkoutCourse.paymentId = session.id;
+      await checkoutCourse.save();
+    }
 
     return res.status(200).json({
       success: true,
