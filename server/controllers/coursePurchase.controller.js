@@ -28,7 +28,7 @@ export const createCheckoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "inr",
             product_data: {
               name: course.courseTitle,
               images: [course.courseThumbnail],
@@ -155,7 +155,7 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
 
     return res.status(200).json({
       course,
-      purchased: !!purchased, // true if purchased, false otherwise
+      purchased: purchased ? (purchased.status === 'completed' ? true : false) : false, // true if purchased, false otherwise
     });
   } catch (error) {
     console.log(error);
