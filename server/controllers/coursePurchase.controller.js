@@ -155,7 +155,7 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
 
     return res.status(200).json({
       course,
-      purchased: !!purchased, // true if purchased, false otherwise
+      purchased: purchased.status === 'completed' ? true : false, // true if purchased, false otherwise
     });
   } catch (error) {
     console.log(error);
