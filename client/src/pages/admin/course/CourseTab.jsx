@@ -90,6 +90,12 @@ const CourseTab = () => {
     }
   };
 
+  useEffect(() => {
+    if(courseByIdData?.course.courseThumbnail) {
+      setPreviewThumbnail(courseByIdData?.course.courseThumbnail)
+    }
+  }, [courseByIdData?.course.courseThumbnail]);
+
   const updateCourseHandler = async () => {
     const formData = new FormData();
     formData.append("courseTitle", input.courseTitle);
@@ -221,7 +227,7 @@ const CourseTab = () => {
               </Select>
             </div>
             <div>
-              <Label>Price in (INR)</Label>
+              <Label>Price in (USD)</Label>
               <Input
                 type="number"
                 name="coursePrice"

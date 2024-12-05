@@ -32,7 +32,10 @@ const Course = ({course}) => {
           </Badge>
         </div>
         <div className="text-lg font-bold">
-            <span>₹{course.coursePrice}</span>
+            <span>{new Intl.NumberFormat('en-EN', {
+                                        style: 'currency',
+                                        currency: 'USD',
+                                    }).format(course.coursePrice)}</span>
         </div>
       </CardContent>
     </Card>
