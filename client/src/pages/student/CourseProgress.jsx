@@ -9,11 +9,13 @@ import {
 } from "@/features/api/courseProgressApi";
 import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const CourseProgress = () => {
   const params = useParams();
+  const navigate = useNavigate();
+
   const courseId = params.courseId;
   const { data, isLoading, isError, refetch } =
     useGetCourseProgressQuery(courseId);
@@ -45,8 +47,6 @@ const CourseProgress = () => {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Failed to load course details</p>;
-
-  console.log(data);
 
   const { courseDetails, progress, completed } = data.data;
   const { courseTitle } = courseDetails;
@@ -81,7 +81,9 @@ const CourseProgress = () => {
     <div className="max-w-7xl mx-auto p-4">
       {/* Display course name  */}
       <div className="flex justify-between mb-4">
-        <h1 className="text-2xl font-bold">{courseTitle}</h1>
+        <h1 className="text-2xl font-bold cursor-pointer"
+        onClick={() => navigate(`/course-detail/${courseId}`)}
+        >{courseTitle}</h1>
         <Button
           onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
           variant={completed ? "outline" : "default"}
