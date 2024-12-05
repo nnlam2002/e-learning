@@ -110,8 +110,12 @@ export const getUserProfile = async (req,res) => {
 export const updateProfile = async (req,res) => {
     try {
         const userId = req.id;
-        const {name} = req.body;
+        let {name} = req.body;
         const profilePhoto = req.file;
+        let updatedData;
+
+        console.log(profilePhoto)
+        // if(name !== '')
 
         const user = await User.findById(userId);
         if(!user){
@@ -120,17 +124,25 @@ export const updateProfile = async (req,res) => {
                 success:false
             }) 
         }
-        // extract public id of the old image from the url is it exists;
-        if(user.photoUrl){
-            const publicId = user.photoUrl.split("/").pop().split(".")[0]; // extract public id
-            deleteMediaFromCloudinary(publicId);
+
+        if(name.trim().length < 1) name = user.name; 
+
+        if(profilePhoto) {
+            // extract public id of the old image from the url is it exists;
+            if(user.photoUrl){
+                const publicId = user.photoUrl.split("/").pop().split(".")[0]; // extract public id
+                deleteMediaFromCloudinary(publicId);
+            }
+
+            // upload new photo
+            const cloudResponse = await uploadMedia(profilePhoto.path);
+            const photoUrl = cloudResponse.secure_url;
+            updatedData = {name, photoUrl};
         }
-
-        // upload new photo
-        const cloudResponse = await uploadMedia(profilePhoto.path);
-        const photoUrl = cloudResponse.secure_url;
-
-        const updatedData = {name, photoUrl};
+        else {
+            updatedData = {name};
+        }
+        console.log(profilePhoto, updatedData)
         const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {new:true}).select("-password");
 
         return res.status(200).json({

@@ -48,7 +48,7 @@ export const createCheckoutSession = async (req, res) => {
         .json({ success: false, message: "Error while creating session" });
     }
 
-    const checkoutCourse = await CoursePurchase.findOne({userId});
+    const checkoutCourse = await CoursePurchase.findOne({userId, courseId});
     if(!checkoutCourse) {
         // Create a new course purchase record
         const newPurchase = new CoursePurchase({
