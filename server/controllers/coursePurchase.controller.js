@@ -25,7 +25,7 @@ export const createCheckoutSession = async (req, res) => {
               name: course.courseTitle,
               images: [course.courseThumbnail],
             },
-            unit_amount: course.coursePrice * 100, // Amount in paise (lowest denomination)
+            unit_amount: Math.round(course.coursePrice * 100), // Amount in paise (lowest denomination)
           },
           quantity: 1,
         },
@@ -38,7 +38,7 @@ export const createCheckoutSession = async (req, res) => {
         userId: userId,
       },
       shipping_address_collection: {
-        allowed_countries: ["IN"], // Optionally restrict allowed countries
+        allowed_countries: ["VN"], // Optionally restrict allowed countries
       },
     });
 
@@ -115,12 +115,12 @@ export const stripeWebhook = async (req, res) => {
       purchase.status = "completed";
 
       // Make all lectures visible by setting `isPreviewFree` to true
-      if (purchase.courseId && purchase.courseId.lectures.length > 0) {
-        await Lecture.updateMany(
-          { _id: { $in: purchase.courseId.lectures } },
-          { $set: { isPreviewFree: true } }
-        );
-      }
+      // if (purchase.courseId && purchase.courseId.lectures.length > 0) {
+      //   await Lecture.updateMany(
+      //     { _id: { $in: purchase.courseId.lectures } },
+      //     { $set: { isPreviewFree: true } }
+      //   );
+      // }
 
       await purchase.save();
 
