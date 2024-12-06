@@ -17,38 +17,15 @@ import Course from "./Course";
 import {
   useLoadUserQuery,
   useUpdateUserMutation,
+  useUpdatePasswordMutation
 } from "@/features/api/authApi";
 import { toast } from "sonner";
+import { current } from "@reduxjs/toolkit";
 const Profile = () => {
   const [name, setName] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [secondPassword, setSecondPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [oldPasswordError, setOldPasswordError] = useState("");
-
-  const validatePassword = (password) => {
-    if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters long.");
-    } else {
-      setPasswordError("");
-    }
-  };
-
-  const updatePasswordHandler = () => {
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (password !== secondPassword) {
-      toast.error("Passwords do not match.");
-      return;
-    }
-
-    // Gửi API để cập nhật mật khẩu ở đây
-    toast.success("Password updated successfully.");
-  };
 
   const [profilePhoto, setProfilePhoto] = useState("");
 
@@ -57,6 +34,8 @@ const Profile = () => {
     useState(false);
 
   const { data, isLoading, refetch } = useLoadUserQuery();
+  const [updatePassword] = useUpdatePasswordMutation();
+
   const [
     updateUser,
     { isLoading: updateUserIsLoading, isError, error, isSuccess },
@@ -73,6 +52,43 @@ const Profile = () => {
     formData.append("profilePhoto", profilePhoto);
     await updateUser(formData);
   };
+
+  const updatePasswordHandler = async () => {
+    if (currentPassword.trim().length < 1) {
+        toast.error("Please enter your current password");
+        return;
+    }
+
+    if (password.length < 8) {
+        toast.error("Password must be at least 8 characters long.");
+        return;
+    }
+
+    if (password !== secondPassword) {
+        toast.error("Passwords do not match.");
+        return;
+    }
+
+    try {
+        await updatePassword({
+            userId: user._id,
+            currentPassword: currentPassword,
+            newPassword: password,
+        }).unwrap();
+
+        toast.success("Password updated successfully.");
+    } catch (error) {
+        toast.error(error?.data?.message || "Failed to update password.");
+    }
+};
+
+const validatePassword = (password) => {
+  if (/\s/.test(password)) {
+      toast.error("Password cannot contain spaces.");
+      return false;
+  }
+  return true;
+};
 
   useEffect(() => {
     refetch();
@@ -224,19 +240,14 @@ const Profile = () => {
               <Label>Current Password</Label>
               <Input
                 type="password"
-                value={oldPassword}
+                value={currentPassword}
                 onChange={(e) => {
-                  setOldPassword(e.target.value);
+                  setCurrentPassword(e.target.value);
                 }}
                 placeholder="Current Password"
                 className="col-span-3"
               />
             </div>
-            {oldPasswordError && (
-              <p className="text-red-500 text-sm col-span-3">
-                {oldPasswordError}
-              </p>
-            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label>New Password</Label>
               <Input
@@ -250,15 +261,15 @@ const Profile = () => {
                 className="col-span-3"
               />
             </div>
-            {passwordError && (
-              <p className="text-red-500 text-sm col-span-3">{passwordError}</p>
-            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label>Re-type Password</Label>
               <Input
                 type="password"
                 value={secondPassword}
-                onChange={(e) => setSecondPassword(e.target.value)}
+                onChange={(e) => {
+                  setSecondPassword(e.target.value);
+                  }
+                }
                 placeholder="Re-type Password"
                 className="col-span-3"
               />
@@ -266,7 +277,7 @@ const Profile = () => {
           </div>
           <DialogFooter>
             <Button
-              disabled={password.length < 8 || password !== secondPassword}
+              // disabled={password.length < 8 || password !== secondPassword}
               onClick={updatePasswordHandler}
             >
               Save Changes
