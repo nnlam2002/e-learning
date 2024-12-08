@@ -83,12 +83,10 @@ export const login = async (req,res) => {
         })
     }
 }
-<<<<<<< HEAD
 export const forgot = async (req,res) => {
     try {
         // console.log(req.body);
         const {email, code, pass} = req.body;
-        console.log(req.body);
         
         if(!email){
             return res.status(400).json({
@@ -159,7 +157,6 @@ export const forgot = async (req,res) => {
     }
   
 }
-=======
 
 export const updatePassword = async (req, res) => {
     const { userId, currentPassword, newPassword } = req.body;
@@ -199,7 +196,6 @@ export const updatePassword = async (req, res) => {
     }
 };
 
->>>>>>> d512359037f61621e62b4906150cd592a9160939
 export const logout = async (_,res) => {
     try {
         return res.status(200).cookie("token", "", {maxAge:0}).json({
