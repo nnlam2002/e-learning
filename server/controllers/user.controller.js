@@ -2,6 +2,17 @@ import {User} from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import { deleteMediaFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
+import nodemailer from 'nodemailer';
+let codeMain = 0;
+const transporter = nodemailer.createTransport({
+  secure: true, // Hoặc dùng dịch vụ email khác
+  host: "smtp.gmail.com",
+  port: 465,
+  auth: {
+    user: 'thuahuy.kth@gmail.com',
+    pass: 'zyuoamhqtawrvhnw',
+  },
+});
 
 export const register = async (req,res) => {
     try {
@@ -39,12 +50,13 @@ export const register = async (req,res) => {
     }
 }
 export const login = async (req,res) => {
+    
     try {
         const {email, password} = req.body;
         if(!email || !password){
             return res.status(400).json({
                 success:false,
-                message:"All fields are required."
+                message:req.body
             })
         }
         const user = await User.findOne({email});
@@ -70,6 +82,81 @@ export const login = async (req,res) => {
             message:"Failed to login"
         })
     }
+}
+export const forgot = async (req,res) => {
+    try {
+        // console.log(req.body);
+        const {email, code, pass} = req.body;
+        console.log(req.body);
+        
+        if(!email){
+            return res.status(400).json({
+                success:false,
+                message:"No have mail"
+            })
+        }
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"No account have this mail"
+            })
+        }
+        if (code === '' && email) {
+            codeMain = Math.floor(100000 + Math.random() * 900000).toString();
+            // Cập nhật mật khẩu mới cho người dùng
+            // const hashPassword = await bcrypt.hash(newPassword, 10);
+            // user.password = newPassword;
+            // await user.save();
+            const mailOptions = {
+                from: 'thuahuy.kth@gmail.com',
+                to: user.email,
+                subject: 'Your New Password',
+                text: `Your new password is: ${codeMain}`
+              };
+          
+              // Gửi email
+              transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                  return res.status(500).json({ error: error });
+                }
+                res.status(200).json({ message: 'A reset code has been sent to your email.' });
+              });
+        }else{
+            if (code === codeMain) {
+                if (pass === '') {
+                    return res.status(200).json({
+                        success: true,
+                        message: "Correct code. Proceed to reset password.",
+                    });
+                }
+                const hashedPassword = await bcrypt.hash(pass, 10);
+            
+                user.password = hashedPassword;
+                await user.save();
+    
+                return res.status(200).json({
+                    success: true,
+                    message: "Password has been reset successfully.",
+                });
+                
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: "Incorrect code. Please try again.",
+                });
+            }
+        }
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to login"
+        })
+    }
+  
 }
 export const logout = async (_,res) => {
     try {

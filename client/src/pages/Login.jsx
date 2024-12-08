@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLoginUserMutation,
   useRegisterUserMutation,
+  useForgotPasswordMutation,
 } from "@/features/api/authApi";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,9 +28,15 @@ const Login = () => {
   });
   const [loginInput, setLoginInput] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotPasswordDialogOpen, setForgotPasswordDialogOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState({ email: "", code: "", pass:''});
+  const [isEmailSent, setIsEmailSent] = useState(false); // Trạng thái gửi email thành công
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [currentTab, setCurrentTab] = useState("login");
   const [searchParams] = useSearchParams();
+  const [isCodeComplete, setIsCodeComplete] = useState(false);
+  const [isCodeValid, setIsCodeValid] = useState(false); // Quản lý trạng thái mã hợp lệ
+  // const [newPassword, setNewPassword] = useState("");    // Quản lý mật khẩu mới
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -45,7 +52,6 @@ const Login = () => {
   const toggleLoginPasswordVisibility = () => {
     setShowLoginPassword((prev) => !prev);
   };
-
   const [
     registerUser,
     {
@@ -55,6 +61,9 @@ const Login = () => {
       isSuccess: registerIsSuccess,
     },
   ] = useRegisterUserMutation();
+  const [
+    forgotPassword
+  ] = useForgotPasswordMutation();
   const [
     loginUser,
     {
@@ -70,8 +79,19 @@ const Login = () => {
     const { name, value } = e.target;
     if (type === "signup") {
       setSignupInput({ ...signupInput, [name]: value });
-    } else {
+    } else if(type === "login") {
       setLoginInput({ ...loginInput, [name]: value });
+    }else{
+      setForgotEmail((prevState) => {
+        const updatedState = { ...prevState, [name]: value };
+  
+        // Kiểm tra mã code đã đủ 6 ký tự hay chưa
+        if (name === "code") {
+          setIsCodeComplete(value.length === 6); // Cập nhật trạng thái nút Submit
+        }
+  
+        return updatedState;
+      });
     }
   };
 
@@ -80,7 +100,36 @@ const Login = () => {
     const action = type === "signup" ? registerUser : loginUser;
     await action(inputData);
   };
+  const handleForgotPassword = async () => {
+    if (!forgotEmail.email) {
+      toast.error("Please enter your email.");
+      return;
+    }
+    // if (!forgotEmail.code) {
+    //   return;
+    // }
+    // Add forgot password logic here
+    try {
+      // Thực hiện gửi email
+      // const response = await forgotPassword({ email: forgotEmail.email, code: forgotEmail.code });
+      const response = await forgotPassword(forgotEmail);
+      // toast.success("A reset code has been sent to your email.");
+      if (response.data.message === "Password has been reset successfully.") {
+            setForgotPasswordDialogOpen(false);
+      }
+      if (response?.data?.success) {
+        toast.success(response.data.message);
+        setIsCodeValid(true); // Cho phép nhập mật khẩu mới
+    } else {
+        toast.error(response?.data?.message || "Incorrect code.");
+        setIsCodeValid(false); // Không hợp lệ
+    }
+      setIsEmailSent(true); // Cập nhật trạng thái gửi email thành công
+    } catch (error) {
+      toast.error("Failed to send reset code. Please try again.");
+    }
 
+  };
   useEffect(() => {
     if (registerIsSuccess && registerData) {
       toast.success(registerData.message || "Signup successful.");
@@ -99,7 +148,15 @@ const Login = () => {
       toast.success(loginData.message || "Login successful.");
       navigate("/");
     }
-
+    // if (forgotPasswordIsSuccess && forgotPasswordData) {
+    //   toast.success(forgotPasswordData.message || "Forget password successful.");
+    //   navigate("/");
+    // }
+    // if (forgotPasswordError) {
+    //   const errorMessage =
+    //   forgotPasswordError?.data?.message || "Login Failed";
+    //   toast.error(errorMessage);
+    // }
     if (loginError) {
       const errorMessage =
         loginError?.data?.message || "Login Failed";
@@ -241,6 +298,14 @@ const Login = () => {
                   </button>
                 </div>
               </div>
+              <div style={{ textAlign: 'right' }}>
+              <button
+              className="text-sm text-blue-500 underline"
+              onClick={() => setForgotPasswordDialogOpen(true)}
+            >
+              Forgot Password?
+            </button>
+            </div>
             </CardContent>
             <CardFooter>
               <Button
@@ -260,6 +325,66 @@ const Login = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      {forgotPasswordDialogOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white p-6 rounded shadow-md w-[400px]">
+      <h2 className="text-xl font-semibold mb-4">Forgot Password</h2>
+
+      {/* Input Email */}
+      <Input
+        type="email"
+        name="email"
+        placeholder="Enter your email"
+        value={forgotEmail.email}
+        onChange={(e) => changeInputHandler(e, "forgot")}
+        disabled={isEmailSent} // Disable khi email đã được gửi
+        required
+      />
+
+      {/* Input Code */}
+      {isEmailSent && (
+        <div className="mt-4">
+          <Input
+            type="text"
+            name="code"
+            placeholder="Enter 6-digit code"
+            value={forgotEmail.code}
+            onChange={(e) => changeInputHandler(e, "forgot")}
+            maxLength={6}
+            required
+          />
+        </div>
+      )}
+
+      {/* Input New Password (chỉ hiển thị khi mã hợp lệ) */}
+      {isCodeValid && (
+        <div className="mt-4">
+          <Input
+            type="password"
+            name="pass"
+            placeholder="Enter new password"
+            value={forgotEmail.pass}
+            onChange={(e) => changeInputHandler(e, "forgot")}
+            required
+          />
+        </div>
+      )}
+
+      <div className="flex justify-end mt-4 space-x-2">
+        <Button onClick={() => setForgotPasswordDialogOpen(false)} variant="secondary">
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleForgotPassword} 
+          disabled={isEmailSent && !forgotEmail.code}
+        >
+          {isCodeValid ? "Submit" : isEmailSent ? "Verify Code" : "Send"}
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
