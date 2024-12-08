@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  useRemoveCourseMutation,
   useEditCourseMutation,
   useGetCourseByIdQuery,
   usePublishCourseMutation,
@@ -63,7 +64,20 @@ const CourseTab = () => {
   }, [courseByIdData]);
 
   const [previewThumbnail, setPreviewThumbnail] = useState("");
+  const [removeCourse, { isLoading: isDeleting }] = useRemoveCourseMutation();
   const navigate = useNavigate();
+
+  const deleteCourseHandler = async () => {
+    if (window.confirm("Are you sure you want to delete this course?")) {
+      try {
+        await removeCourse(courseId).unwrap();
+        toast.success("Course deleted successfully!");
+        navigate("/admin/course"); // Điều hướng về danh sách khóa học
+      } catch (error) {
+        toast.error(error.data?.message || "Failed to delete the course.");
+      }
+    }
+  };
 
   const [editCourse, { data, isLoading, isSuccess, error }] =
     useEditCourseMutation();
@@ -145,7 +159,20 @@ const CourseTab = () => {
           <Button disabled={courseByIdData?.course.lectures.length === 0} variant="outline" onClick={()=> publishStatusHandler(courseByIdData?.course.isPublished ? "false" : "true")}>
             {courseByIdData?.course.isPublished ? "Unpublished" : "Publish"}
           </Button>
-          <Button>Remove Course</Button>
+          <Button
+            variant="destructive"
+            disabled={isDeleting}
+            onClick={deleteCourseHandler}
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Remove Course"
+            )}
+          </Button>
         </div>
       </CardHeader>
       <CardContent>

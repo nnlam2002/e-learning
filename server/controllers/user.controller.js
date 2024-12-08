@@ -83,6 +83,7 @@ export const login = async (req,res) => {
         })
     }
 }
+<<<<<<< HEAD
 export const forgot = async (req,res) => {
     try {
         // console.log(req.body);
@@ -158,6 +159,47 @@ export const forgot = async (req,res) => {
     }
   
 }
+=======
+
+export const updatePassword = async (req, res) => {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    try {
+        // Tìm user từ database
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Kiểm tra mật khẩu hiện tại
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        // Kiểm tra mật khẩu mới không chứa khoảng trắng
+        if (/\s/.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: "New password cannot contain spaces."
+            });
+        }
+        
+        // Hash mật khẩu mới
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // Cập nhật mật khẩu
+        user.password = hashedNewPassword;
+        await user.save();
+
+        return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+>>>>>>> d512359037f61621e62b4906150cd592a9160939
 export const logout = async (_,res) => {
     try {
         return res.status(200).cookie("token", "", {maxAge:0}).json({
@@ -175,7 +217,7 @@ export const logout = async (_,res) => {
 export const getUserProfile = async (req,res) => {
     try {
         const userId = req.id;
-        const user = await User.findById(userId).select("-password").populate("enrolledCourses");
+        const user = await User.findById(userId).populate("enrolledCourses");
         if(!user){
             return res.status(404).json({
                 message:"Profile not found",

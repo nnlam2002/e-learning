@@ -73,7 +73,15 @@ export const authApi = createApi({
                 body:formData,
                 credentials:"include"
             })
-        })
+        }),
+        updatePassword: builder.mutation({
+            query: (inputData) => ({
+                url: "password/update",
+                method: "PUT",
+                body: inputData,
+            }),
+        }),
+        
     })
 });
 export const {
@@ -82,5 +90,6 @@ export const {
     useForgotPasswordMutation,
     useLogoutUserMutation,
     useLoadUserQuery,
-    useUpdateUserMutation
+    useUpdateUserMutation,
+    useUpdatePasswordMutation
 } = authApi;
