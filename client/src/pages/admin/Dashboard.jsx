@@ -37,7 +37,10 @@ const Dashboard = () => {
           <CardTitle>Total Revenue</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-bold text-blue-600">{totalRevenue}</p>
+          <p className="text-3xl font-bold text-blue-600">{new Intl.NumberFormat('en-EN', {
+              style: 'currency',
+              currency: 'USD',
+            }).format(totalRevenue)}</p>
         </CardContent>
       </Card>
 

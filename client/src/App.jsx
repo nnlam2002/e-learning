@@ -23,6 +23,10 @@ import {
 } from "./components/ProtectedRoutes";
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
+import CategoryTable from "./pages/admin/category/CategoryTable";
+import AddCategory from "./pages/admin/category/AddCategory";
+import EditCategory from "./pages/admin/category/EditCategory";
+// import EditCategory from "./pages/admin/category/EditCategory";
 
 const appRouter = createBrowserRouter([
   {
@@ -122,6 +126,18 @@ const appRouter = createBrowserRouter([
             path: "course/:courseId/lecture/:lectureId",
             element: <EditLecture />,
           },
+          {
+            path: "category",
+            element: <CategoryTable />,
+          },
+          {
+            path: "category/create",
+            element: <AddCategory />,
+          },
+          {
+            path: "category/:categoryId",
+            element: <EditCategory />,
+          }
         ],
       },
     ],
