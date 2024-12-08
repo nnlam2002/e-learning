@@ -340,3 +340,47 @@ export const togglePublishCourse = async (req, res) => {
         })
     }
 }
+
+export const deleteCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({
+                message: "Course not found!",
+            });
+        }
+
+        if (course.enrolledStudents.length > 0) {
+            return res.status(400).json({
+                message: "Cannot delete a course that has enrolled students.",
+            });
+        }
+
+        const lectureIds = course.lectures;
+        for (const lectureId of lectureIds) {
+            const lecture = await Lecture.findById(lectureId);
+            if (lecture?.publicId) {
+                await deleteVideoFromCloudinary(lecture.publicId);
+            }
+            await Lecture.findByIdAndDelete(lectureId);
+        }
+
+        if (course.courseThumbnail) {
+            const publicId = course.courseThumbnail.split("/").pop().split(".")[0];
+            await deleteMediaFromCloudinary(publicId);
+        }
+
+        await Course.findByIdAndDelete(courseId);
+
+        return res.status(200).json({
+            message: "Course deleted successfully.",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Failed to delete course",
+        });
+    }
+};
