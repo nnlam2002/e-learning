@@ -151,7 +151,8 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
 
     const course = await Course.findById(courseId)
       .populate({ path: "creator" })
-      .populate({ path: "lectures" });
+      .populate({ path: "lectures" })
+      .populate({ path: "category" });
 
     const purchased = await CoursePurchase.findOne({ userId, courseId });
     console.log(purchased);

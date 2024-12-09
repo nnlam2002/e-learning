@@ -11,6 +11,7 @@ router.route("/login").post(login);
 router.route("/forgot").post(forgot);
 router.route("/logout").get(logout);
 router.route("/profile").get(isAuthenticated, getUserProfile);
+router.route("/profile/update").put(isAuthenticated, upload.single("profilePhoto"), updateProfile);
 router.route("/password/update").put(isAuthenticated, updatePassword); // Route mới
 
 export default router;

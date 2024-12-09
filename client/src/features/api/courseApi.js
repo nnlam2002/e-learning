@@ -11,10 +11,10 @@ export const courseApi = createApi({
   }),
   endpoints: (builder) => ({
     createCourse: builder.mutation({
-      query: ({ courseTitle, category }) => ({
+      query: ({ courseTitle }) => ({
         url: "",
         method: "POST",
-        body: { courseTitle, category },
+        body: { courseTitle },
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
@@ -119,7 +119,7 @@ export const courseApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
-    }),    
+    }),
   }),
 });
 export const {
