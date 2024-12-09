@@ -1,8 +1,11 @@
-import { ChartNoAxesColumn, SquareLibrary, List } from "lucide-react";
+import { ChartNoAxesColumn, SquareLibrary, List, Users } from "lucide-react";
 import React from "react";
+import { useSelector } from "react-redux";
 import { Link, Outlet } from "react-router-dom";
 
 const Sidebar = () => {
+  const { user } = useSelector((store) => store.auth);
+
   return (
     <div className="flex">
       {/* Sidebar */}
@@ -23,6 +26,13 @@ const Sidebar = () => {
             <List size={22} />
             <h1>Categories</h1>
           </Link>
+          {/* User Management Tab - Only for Admin */}
+          {user?.role === "admin" && (
+            <Link to="user" className="flex items-center gap-2">
+              <Users size={22} />
+              <h1>User Management</h1>
+            </Link>
+          )}
         </div>
       </div>
       {/* Main Content */}

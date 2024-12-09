@@ -17,6 +17,13 @@ export const authApi = createApi({
                 body:inputData
             })
         }),
+        registerInstructor: builder.mutation({
+            query: (inputData) => ({
+                url:"register-instructor",
+                method:"POST",
+                body:inputData
+            })
+        }),
         loginUser: builder.mutation({
             query: (inputData) => ({
                 url:"login",
@@ -66,6 +73,12 @@ export const authApi = createApi({
                 }
             }
         }),
+        loadUserById: builder.query({
+            query: (userId) => ({
+                url:`profile/${userId}`,
+                method:"GET"
+            }),
+        }),
         updateUser: builder.mutation({
             query: (formData) => ({
                 url:"profile/update",
@@ -81,15 +94,23 @@ export const authApi = createApi({
                 body: inputData,
             }),
         }),
-        
+        getAllUsers: builder.query({
+            query: () => ({
+                url: "user",
+                method: "GET",
+            }),
+        }),
     })
 });
 export const {
     useRegisterUserMutation,
+    useRegisterInstructorMutation,
     useLoginUserMutation,
     useForgotPasswordMutation,
     useLogoutUserMutation,
     useLoadUserQuery,
+    useLoadUserByIdQuery,
     useUpdateUserMutation,
-    useUpdatePasswordMutation
+    useUpdatePasswordMutation,
+    useGetAllUsersQuery,
 } = authApi;
