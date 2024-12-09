@@ -82,7 +82,7 @@ const Navbar = () => {
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                {user?.role === "instructor" && (
+                {(user?.role === "instructor" || user?.role === "admin") && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem><Link to="/admin/dashboard">Dashboard</Link></DropdownMenuItem>
@@ -137,7 +137,7 @@ const MobileNavbar = ({user}) => {
           <Link to="/profile">Edit Profile</Link>
           <p>Log out</p>
         </nav>
-        {user?.role === "instructor" && (
+        {(user?.role === "instructor" || user?.role === "admin") && (
           <SheetFooter>
             <SheetClose asChild>
               <Button type="submit" onClick={()=> navigate("/admin/dashboard")}>Dashboard</Button>

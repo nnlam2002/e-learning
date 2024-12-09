@@ -49,6 +49,42 @@ export const register = async (req,res) => {
         })
     }
 }
+export const registerInstructor = async (req,res) => {
+    try {
+       
+        const {name, email, password} = req.body; // patel214
+        if(!name || !email || !password){
+            return res.status(400).json({
+                success:false,
+                message:"All fields are required."
+            })
+        }
+        const user = await User.findOne({email});
+        if(user){
+            return res.status(400).json({
+                success:false,
+                message:"User already exist with this email."
+            })
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await User.create({
+            name,
+            email,
+            password:hashedPassword,
+            role: 'instructor'
+        });
+        return res.status(201).json({
+            success:true,
+            message:"Account created successfully. Please login"
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to register"
+        })
+    }
+}
 export const login = async (req,res) => {
     
     try {
@@ -232,6 +268,29 @@ export const getUserProfile = async (req,res) => {
         })
     }
 }
+export const getUserProfileById = async (req,res) => {
+    try {
+        const userId = req.params.userId;
+        
+        const user = await User.findById(userId).populate("enrolledCourses");
+        if(!user){
+            return res.status(404).json({
+                message:"Profile not found",
+                success:false
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            user
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to load user"
+        })
+    }
+}
 export const updateProfile = async (req,res) => {
     try {
         const userId = req.id;
@@ -283,4 +342,27 @@ export const updateProfile = async (req,res) => {
             message:"Failed to update profile"
         })
     }
-}
+};
+
+export const getAllUser = async (req, res) => {
+    try {
+        const users = await User.find().select("-password"); // Exclude password field
+        if (!users || users.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No users found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            users,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to retrieve users",
+        });
+    }
+};

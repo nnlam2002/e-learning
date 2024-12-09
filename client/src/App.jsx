@@ -26,6 +26,9 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import CategoryTable from "./pages/admin/category/CategoryTable";
 import AddCategory from "./pages/admin/category/AddCategory";
 import EditCategory from "./pages/admin/category/EditCategory";
+import UserTable from "./pages/admin/user/UserTable";
+import AddInstructor from "./pages/admin/user/AddInstructor";
+import EditUser from "./pages/admin/user/EditUser";
 // import EditCategory from "./pages/admin/category/EditCategory";
 
 const appRouter = createBrowserRouter([
@@ -137,7 +140,19 @@ const appRouter = createBrowserRouter([
           {
             path: "category/:categoryId",
             element: <EditCategory />,
-          }
+          },
+          {
+            path: "user",
+            element: <UserTable />,
+          },
+          {
+            path: "user/create",
+            element: <AddInstructor />,
+          },
+          {
+            path: "user/:userId",
+            element: <EditUser />,
+          },
         ],
       },
     ],
