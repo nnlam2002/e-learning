@@ -1,6 +1,7 @@
 
 import mongoose from "mongoose";
 import { Course } from "../models/course.model.js";
+import { Review } from "../models/review.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 
