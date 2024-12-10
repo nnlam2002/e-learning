@@ -1,10 +1,12 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import { userLoggedIn, userLoggedOut } from "../authSlice";
+import { useId } from "react";
 
 const USER_API = "http://localhost:8080/api/v1/user/"
 
 export const authApi = createApi({
     reducerPath:"authApi",
+    tagTypes: ["User"],
     baseQuery:fetchBaseQuery({
         baseUrl:USER_API,
         credentials:'include'
@@ -87,6 +89,18 @@ export const authApi = createApi({
                 credentials:"include"
             })
         }),
+        updateUserRole: builder.mutation({
+            query: ({ userId, newRole }) => ({
+                url: "role/update",
+                method: "PUT",
+                body: {
+                    userId: userId,
+                    newRole: newRole,
+                },
+                credentials: "include",
+            }),
+            invalidatesTags: ['User'],
+        }),
         updatePassword: builder.mutation({
             query: (inputData) => ({
                 url: "password/update",
@@ -99,6 +113,7 @@ export const authApi = createApi({
                 url: "user",
                 method: "GET",
             }),
+            providesTags: ['User'],
         }),
     })
 });
@@ -111,6 +126,7 @@ export const {
     useLoadUserQuery,
     useLoadUserByIdQuery,
     useUpdateUserMutation,
+    useUpdateUserRoleMutation,
     useUpdatePasswordMutation,
     useGetAllUsersQuery,
 } = authApi;

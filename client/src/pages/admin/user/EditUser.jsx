@@ -13,21 +13,46 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // For redirection after editing
-import { useLoadUserByIdQuery, useLoadUserQuery, useUpdateUserMutation } from "@/features/api/authApi";
+import { useLoadUserByIdQuery, useLoadUserQuery, useUpdateUserMutation, useUpdateUserRoleMutation } from "@/features/api/authApi";
 import { toast } from "sonner";
 import Course from "@/pages/student/Course";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EditUser = () => {
-    const params = useParams();
-    const userId = params.userId;
+  const [isChangeRoleDialogOpen, setIsChangeRoleDialogOpen] = useState(false);
+  const [role, setRole] = useState("");
 
-    const { data, isLoading, refetch } = useLoadUserByIdQuery(userId);    
+  const params = useParams();
+  const userId = params.userId;
 
-    if (isLoading) return <h1>Profile Loading...</h1>;
+  const { data, isLoading, refetch } = useLoadUserByIdQuery(userId);
 
-    const user = data && data.user;
-    console.log(user.enrolledCourses.length);
-    
+  const [
+    updateUserRole,
+    { isLoading: updateUserIsLoading, isError, error, isSuccess },
+  ] = useUpdateUserRoleMutation();
+
+  const user = data && data.user;
+
+  const updateRoleHandler = async () => {    
+    await updateUserRole({
+      userId: userId,
+      newRole: role
+    });
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      refetch();
+      toast.success("User's role updated successfully.");      
+    }
+    if (isError) {
+      toast.error("Failed to update user's role");
+    }    
+  }, [isSuccess, isError]);
+
+  if (isLoading) return <h1>Profile Loading...</h1>;
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="font-bold text-2xl text-center md:text-left">PROFILE</h1>
@@ -66,26 +91,76 @@ const EditUser = () => {
               </span>
             </h1>
           </div>
+
+          <Button
+            size="sm"
+            className="mt-2 ml-3"
+            onClick={() => setIsChangeRoleDialogOpen(true)}
+          >
+            Change Role
+          </Button>
         </div>
       </div>
       {/* Enrolled Courses Section */}
       <div className="mt-4">
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100">Enrolled Courses:</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <ul className="mt-2">
-              {user?.enrolledCourses && user.enrolledCourses.length > 0 ? (
-                user.enrolledCourses.map((course, index) => (
-                  <li key={index} className="font-normal text-gray-700 dark:text-gray-300">
-                    <Course key={index} course={course}/>
-                  </li>
-                ))
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100">Enrolled Courses:</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <ul className="mt-2">
+            {user?.enrolledCourses && user.enrolledCourses.length > 0 ? (
+              user.enrolledCourses.map((course, index) => (
+                <li key={index} className="font-normal text-gray-700 dark:text-gray-300">
+                  <Course key={index} course={course} />
+                </li>
+              ))
+            ) : (
+              <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+            )}
+          </ul>
+        </div>
+      </div>
+
+      <Dialog
+        open={isChangeRoleDialogOpen}
+        onOpenChange={setIsChangeRoleDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change user's role</DialogTitle>
+            <DialogDescription>
+              Make changes to user's role here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <Label>Role</Label>
+          <Select
+            defaultValue={user?.role}
+            onValueChange={setRole}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="instructor">Instructor</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button
+              disabled={updateUserIsLoading}
+              onClick={updateRoleHandler}
+            >
+              {updateUserIsLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+                </>
               ) : (
-                <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+                "Save Changes"
               )}
-            </ul>
-          </div>
-            
-          </div>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

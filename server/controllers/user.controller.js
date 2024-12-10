@@ -231,6 +231,27 @@ export const updatePassword = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+export const updateUserRole = async (req, res) => {
+    const { userId, newRole } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, {role: newRole}, {new:true}).select("-password");
+
+        return res.status(200).json({
+            success:true,
+            user:updatedUser,
+            message:"User's role updated successfully."
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
 
 export const logout = async (_,res) => {
     try {
