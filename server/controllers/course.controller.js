@@ -109,7 +109,27 @@ export const getCreatorCourses = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: "Failed to create course"
+            message: "Failed to load courses"
+        })
+    }
+}
+export const getCreatorCoursesById = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const courses = await Course.find({ creator: userId }).populate({ path: "creator", select: "name photoUrl" }).populate({ path: "category" });
+        if (!courses) {
+            return res.status(404).json({
+                courses: [],
+                message: "Course not found"
+            })
+        };
+        return res.status(200).json({
+            courses,
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Failed to load courses"
         })
     }
 }

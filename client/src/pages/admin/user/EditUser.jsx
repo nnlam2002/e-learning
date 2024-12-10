@@ -17,6 +17,7 @@ import { useLoadUserByIdQuery, useLoadUserQuery, useUpdateUserMutation, useUpdat
 import { toast } from "sonner";
 import Course from "@/pages/student/Course";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useGetCreatorCourseByIdQuery } from "@/features/api/courseApi";
 
 const EditUser = () => {
   const [isChangeRoleDialogOpen, setIsChangeRoleDialogOpen] = useState(false);
@@ -27,6 +28,8 @@ const EditUser = () => {
 
   const { data, isLoading, refetch } = useLoadUserByIdQuery(userId);
 
+  const { data: userPublishedData, isLoading: userPublishedLoading } = useGetCreatorCourseByIdQuery(userId);
+
   const [
     updateUserRole,
     { isLoading: updateUserIsLoading, isError, error, isSuccess },
@@ -34,7 +37,7 @@ const EditUser = () => {
 
   const user = data && data.user;
 
-  const updateRoleHandler = async () => {    
+  const updateRoleHandler = async () => {
     await updateUserRole({
       userId: userId,
       newRole: role
@@ -44,14 +47,14 @@ const EditUser = () => {
   useEffect(() => {
     if (isSuccess) {
       refetch();
-      toast.success("User's role updated successfully.");      
+      toast.success("User's role updated successfully.");
     }
     if (isError) {
       toast.error("Failed to update user's role");
-    }    
+    }
   }, [isSuccess, isError]);
 
-  if (isLoading) return <h1>Profile Loading...</h1>;
+  if (isLoading || userPublishedLoading) return <h1>Profile Loading...</h1>;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -104,20 +107,35 @@ const EditUser = () => {
       {/* Enrolled Courses Section */}
       <div className="mt-4">
         <h2 className="font-semibold text-gray-900 dark:text-gray-100">Enrolled Courses:</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <ul className="mt-2">
-            {user?.enrolledCourses && user.enrolledCourses.length > 0 ? (
-              user.enrolledCourses.map((course, index) => (
-                <li key={index} className="font-normal text-gray-700 dark:text-gray-300">
-                  <Course key={index} course={course} />
-                </li>
-              ))
-            ) : (
-              <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
-            )}
-          </ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          {user?.enrolledCourses && user.enrolledCourses.length > 0 ? (
+            user?.enrolledCourses.map((course, index) => (
+              <div key={index} className="font-normal text-gray-700 dark:text-gray-300">
+                <Course course={course} />
+              </div>
+            ))
+          ) : (
+            <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+          )}
         </div>
       </div>
+
+      {/* Published Courses Section */}
+      <div className="mt-4">
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100">Published Courses:</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          {userPublishedData.courses && userPublishedData.courses.length > 0 ? (
+            userPublishedData.courses.map((course, index) => (
+              <div key={index} className="font-normal text-gray-700 dark:text-gray-300">
+                <Course course={course} />
+              </div>
+            ))
+          ) : (
+            <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+          )}
+        </div>
+      </div>
+
 
       <Dialog
         open={isChangeRoleDialogOpen}
