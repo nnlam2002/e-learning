@@ -4,6 +4,7 @@ const COURSE_PURCHASE_API = "http://localhost:8080/api/v1/purchase";
 
 export const purchaseApi = createApi({
   reducerPath: "purchaseApi",
+  tagTypes: ["Refetch_Purchased_Course"],
   baseQuery: fetchBaseQuery({
     baseUrl: COURSE_PURCHASE_API,
     credentials: "include",
@@ -15,18 +16,21 @@ export const purchaseApi = createApi({
         method: "POST",
         body: { courseId },
       }),
+      invalidatesTags: ["Refetch_Purchased_Course"],
     }),
     getCourseDetailWithStatus: builder.query({
       query: (courseId) => ({
         url: `/course/${courseId}/detail-with-status`,
         method: "GET",
       }),
+      providesTags: ["Refetch_Purchased_Course"],
     }),
     getPurchasedCourses: builder.query({
       query: () => ({
         url: `/`,
         method: "GET",
       }),
+      providesTags: ["Refetch_Purchased_Course"],
     }),
   }),
 });

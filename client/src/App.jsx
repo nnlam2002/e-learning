@@ -29,6 +29,7 @@ import EditCategory from "./pages/admin/category/EditCategory";
 import UserTable from "./pages/admin/user/UserTable";
 import AddInstructor from "./pages/admin/user/AddInstructor";
 import EditUser from "./pages/admin/user/EditUser";
+import AboutUs from "./pages/student/AboutUs";
 // import EditCategory from "./pages/admin/category/EditCategory";
 
 const appRouter = createBrowserRouter([
@@ -42,6 +43,14 @@ const appRouter = createBrowserRouter([
           <>
             <HeroSection />
             <Courses />
+          </>
+        ),
+      },
+      {
+        path: "about",
+        element: (
+          <>
+            <AboutUs />
           </>
         ),
       },

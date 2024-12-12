@@ -3,19 +3,30 @@ import Filter from "./Filter";
 import SearchResult from "./SearchResult";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetSearchCourseQuery } from "@/features/api/courseApi";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("query");
   const [selectedCategories, setSelectedCatgories] = useState([]);
   const [sortByPrice, setSortByPrice] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const searchHandler = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      navigate(`/course/search?query=${searchQuery}`);
+    }
+    setSearchQuery("");
+  };
 
   const { data, isLoading } = useGetSearchCourseQuery({
-    searchQuery:query,
-    categories:selectedCategories,
+    searchQuery: query,
+    categories: selectedCategories,
     sortByPrice
   });
 
@@ -27,15 +38,24 @@ const SearchPage = () => {
   }
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
-      <div className="my-6">
-        <h1 className="font-bold text-xl md:text-2xl">result for "{query}"</h1>
-        <p>
-          Showing results for {""}
-          <span className="text-blue-800 font-bold italic">{query}</span>
-        </p>
+      <div className="my-6 flex justify-center">
+        <form onSubmit={searchHandler} className="flex items-center bg-white dark:bg-gray-800 rounded-full shadow-lg overflow-hidden max-w-xl w-full transition-transform duration-300 hover:scale-105">
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search Courses"
+            className="flex-grow border-none focus-visible:ring-0 px-6 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+          />
+          <Button type="submit" className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-r-full hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-300">Search</Button>
+        </form>
       </div>
+      <h1 className="text-center font-bold text-xl md:text-2xl mt-4 italic">Result for {""}
+        <span className="text-blue-800 font-bold italic">{query}</span>
+      </h1>
+
       <div className="flex flex-col md:flex-row gap-10">
-        <Filter handleFilterChange={handleFilterChange}/>
+        <Filter handleFilterChange={handleFilterChange} />
         <div className="flex-1">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, idx) => (
@@ -44,7 +64,7 @@ const SearchPage = () => {
           ) : isEmpty ? (
             <CourseNotFound />
           ) : (
-            data?.courses?.map((course) => <SearchResult key={course._id} course={course}/>)
+            data?.courses?.map((course) => <SearchResult key={course._id} course={course} />)
           )}
         </div>
       </div>

@@ -22,7 +22,7 @@ const Course = ({ course }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={course.creator?.photoUrl || "https://github.com/shadcn.png"} alt="@shadcn" />
+                <AvatarImage src={course.creator?.photoUrl || `https://avatar.iran.liara.run/username?username=${course.creator?.name}`} />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <h1 className="font-medium text-sm">{course.creator?.name}</h1>

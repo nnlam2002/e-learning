@@ -56,7 +56,7 @@ const CourseDetail = () => {
       <div
         className="bg-[#2D2F31] text-white relative"
         style={{
-          backgroundImage: `url(${course?.courseThumbnail || "https://github.com/shadcn.png"})`,
+          backgroundImage: `url(${course?.courseThumbnail || `https://avatar.iran.liara.run/username?username=${course?.courseTitle}`})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -83,7 +83,7 @@ const CourseDetail = () => {
             </div>
 
             <img
-              src={course?.creator?.photoUrl || "https://github.com/shadcn.png"}
+              src={course?.creator?.photoUrl || `https://avatar.iran.liara.run/username?username=${course?.creator?.name}`}
               alt={`${course?.creator?.name}'s photo`}
               className="w-40 h-40 object-cover rounded-full border-4 border-white shadow-lg"
             />
