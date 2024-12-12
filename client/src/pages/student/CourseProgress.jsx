@@ -11,12 +11,13 @@ import {
 } from "@/features/api/courseProgressApi";
 import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import ReactPlayer from "react-player";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 const FeedbackSection = ({ courseId }) => {
   const { data, error, isLoading, refetch } = useGetFeedbackQuery(courseId);
+  console.log(data);
+  
   const [submitFeedback] = useSubmitFeedbackMutation();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -41,42 +42,79 @@ const FeedbackSection = ({ courseId }) => {
 
   return (
     <div className="mt-6">
-      <h3 className="font-semibold text-lg mb-4">Comments</h3>
-      {data?.feedback?.length > 0 ? (
-        data.feedback.map((feedback) => (
-          <div key={feedback._id} className="mb-4 border-b pb-2">
-            <div className="flex items-start mb-1">
-              {/* User Avatar */}
-              <img
-                src={feedback.userId?.photoUrl} // URL avatar hoặc hình mặc định
-                alt="User Avatar"
-                className="w-10 h-10 rounded-full mr-3"
-              />
-              {/* User Feedback */}
-              <div className="flex flex-col">
-                <div className="flex items-center mb-1">
-                  {[...Array(5)].map((_, i) => (
-                    <span
-                      key={i}
-                      className={`text-sm ${
-                        i < feedback.star ? "text-yellow-500" : "text-gray-300"
-                      }`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <p className="text-gray-700">{feedback.comment}</p>
-                <p className="text-sm text-gray-500">
-                  By {feedback.userId?.name || "Anonymous"}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-      )}
+      <h3 className="font-semibold text-lg mb-4">Feedback Section</h3>
+
+      {/* Form to add feedback */}
+      <div className="mb-6">
+        <h4 className="font-semibold text-lg">Write your feedback</h4>
+        <div className="flex items-center mt-2">
+          {[...Array(5)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setRating(i + 1)}
+              className={`text-xl ${
+                i < rating ? "text-yellow-500" : "text-gray-300"
+              }`}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        <textarea
+          className="w-full border border-gray-300 rounded-md p-2 mt-2"
+          placeholder="Write your comment here..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <button
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={handleSubmitFeedback}
+        >
+          Submit
+        </button>
+      </div>
+
+      {/* Display feedback */}
+      <div>
+        <h4 className="font-semibold text-lg mb-4">Comments</h4>
+        {data?.feedback?.length > 0 ? (
+          data.feedback.map((feedback) => (
+            <div key={feedback._id} className="mb-6 border-b pb-4">
+  {/* Avatar người dùng */}
+  <div className="flex items-start space-x-4">
+    <img
+      src={feedback.userId?.photoUrl || `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`}
+      alt="User Avatar"
+      className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
+    />
+    <div className="flex-1">
+      {/* Đánh giá sao */}
+      <div className="flex items-center mb-2">
+        {[...Array(5)].map((_, i) => (
+          <span
+            key={i}
+            className={`text-xl cursor-pointer ${
+              i < feedback.star ? "text-yellow-500" : "text-gray-300"
+            }`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+      {/* Nội dung bình luận */}
+      <p className="text-gray-800 text-base mb-2">{feedback.comment}</p>
+      {/* Thông tin người dùng */}
+      <p className="text-sm text-gray-500">
+        By <strong>{feedback.userId?.name || "Anonymous"}</strong>
+      </p>
+    </div>
+  </div>
+</div>
+          ))
+        ) : (
+          <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+        )}
+      </div>
     </div>
   );
 };
@@ -104,6 +142,8 @@ const CourseProgress = () => {
   ] = useInCompleteCourseMutation();
 
   useEffect(() => {
+    console.log(markCompleteData);
+
     if (completedSuccess) {
       refetch();
       toast.success(markCompleteData.message);
@@ -153,7 +193,7 @@ const CourseProgress = () => {
   // Handle select a specific lecture to watch
   const handleSelectLecture = (lecture) => {
     setCurrentLecture(lecture);
-    // handleLectureProgress(lecture._id);
+    handleLectureProgress(lecture._id);
   };
 
 
@@ -189,20 +229,13 @@ const CourseProgress = () => {
         {/* Video section  */}
         <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4">
           <div>
-            <ReactPlayer
-              url={currentLecture?.videoUrl || initialLecture.videoUrl}
-              width="100%"
-              height={"100%"}
-              controls={true}
+            <video
+              src={currentLecture?.videoUrl || initialLecture.videoUrl}
+              controls
               className="w-full h-auto md:rounded-lg"
-              // onPlay={() =>
-              //   handleLectureProgress(currentLecture?._id || initialLecture._id)
-              // }
-              onEnded={() =>
+              onPlay={() =>
                 handleLectureProgress(currentLecture?._id || initialLecture._id)
               }
-              onProgressUpdate={setCurrentLecture}
-              progressData={currentLecture}
             />
           </div>
           {/* Display current watching lecture title */}

@@ -127,7 +127,6 @@ export const getFeedback = async (req, res) => {
     const feedbackList = await Review.find({ courseId })
       .populate("userId", "name photoUrl") // Thêm trường profilePicture
       .sort({ createdAt: -1 });
-    console.log(feedbackList);
     
     return res.status(200).json({
       success: true,
