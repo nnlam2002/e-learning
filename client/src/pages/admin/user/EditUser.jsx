@@ -63,7 +63,7 @@ const EditUser = () => {
         <div className="flex flex-col items-center">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 mb-4">
             <AvatarImage
-              src={user?.photoUrl || "https://github.com/shadcn.png"}
+              src={user?.photoUrl || `https://avatar.iran.liara.run/username?username=${user?.name}`}
               alt="@shadcn"
             />
             <AvatarFallback>CN</AvatarFallback>
@@ -131,7 +131,7 @@ const EditUser = () => {
               </div>
             ))
           ) : (
-            <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+            <p className="font-normal text-gray-700 dark:text-gray-300">No courses published.</p>
           )}
         </div>
       </div>

@@ -32,6 +32,7 @@ export const categoryApi = createApi({
         url: `/${categoryId}`,
         method: "GET",
       }),
+      providesTags: ["Category"],
     }),
 
     editCategory: builder.mutation({

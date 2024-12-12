@@ -56,12 +56,15 @@ const Navbar = () => {
         </div>
         {/* User icons and dark mode icon  */}
         <div className="flex items-center gap-8">
+        <Link to="/about" className="text-lg font-medium hover:text-blue-600">
+            About Us
+          </Link>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar>
                   <AvatarImage
-                    src={user?.photoUrl || "https://github.com/shadcn.png"}
+                    src={user?.photoUrl || `https://avatar.iran.liara.run/username?username=${user?.name}`}
                     alt="@shadcn"
                   />
                   <AvatarFallback>CN</AvatarFallback>
