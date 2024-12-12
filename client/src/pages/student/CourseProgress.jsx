@@ -9,6 +9,7 @@ import {
 } from "@/features/api/courseProgressApi";
 import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import ReactPlayer from "react-player";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -31,8 +32,6 @@ const CourseProgress = () => {
   ] = useInCompleteCourseMutation();
 
   useEffect(() => {
-    console.log(markCompleteData);
-
     if (completedSuccess) {
       refetch();
       toast.success(markCompleteData.message);
@@ -66,7 +65,7 @@ const CourseProgress = () => {
   // Handle select a specific lecture to watch
   const handleSelectLecture = (lecture) => {
     setCurrentLecture(lecture);
-    handleLectureProgress(lecture._id);
+    // handleLectureProgress(lecture._id);
   };
 
 
@@ -102,13 +101,20 @@ const CourseProgress = () => {
         {/* Video section  */}
         <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4">
           <div>
-            <video
-              src={currentLecture?.videoUrl || initialLecture.videoUrl}
-              controls
+            <ReactPlayer
+              url={currentLecture?.videoUrl || initialLecture.videoUrl}
+              width="100%"
+              height={"100%"}
+              controls={true}
               className="w-full h-auto md:rounded-lg"
-              onPlay={() =>
+              // onPlay={() =>
+              //   handleLectureProgress(currentLecture?._id || initialLecture._id)
+              // }
+              onEnded={() =>
                 handleLectureProgress(currentLecture?._id || initialLecture._id)
               }
+              onProgressUpdate={setCurrentLecture}
+              progressData={currentLecture}
             />
           </div>
           {/* Display current watching lecture title */}
