@@ -131,7 +131,7 @@ const EditUser = () => {
               </div>
             ))
           ) : (
-            <p className="font-normal text-gray-700 dark:text-gray-300">No courses enrolled.</p>
+            <p className="font-normal text-gray-700 dark:text-gray-300">No courses published.</p>
           )}
         </div>
       </div>
