@@ -1,21 +1,29 @@
-import mongoose from "mongoose"
-const reviewSchema = new mongoose.Schema({
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
+import mongoose from "mongoose";
+
+const reviewSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true, // Bắt buộc
     },
-    course:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Course'
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true, // Bắt buộc
     },
-    comment:{
-        type:String,
+    comment: {
+      type: String,
+      required: true, // Bắt buộc
     },
-    star:{
-        type:Number,
-        min:1,
-        max:5,
-        required: true,
-    }
-}, {timestamps:true});
+    star: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true, // Bắt buộc
+    },
+  },
+  { timestamps: true }
+);
+
 export const Review = mongoose.model("Review", reviewSchema);

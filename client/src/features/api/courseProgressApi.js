@@ -9,6 +9,12 @@ export const courseProgressApi = createApi({
     credentials: "include",
   }),
   endpoints: (builder) => ({
+    getFeedback: builder.query({
+      query: (courseId) => ({
+        url: `/${courseId}/feedback`,
+        method: "GET",
+      }),
+    }),
     getCourseProgress: builder.query({
       query: (courseId) => ({
         url: `/${courseId}`,
@@ -21,7 +27,13 @@ export const courseProgressApi = createApi({
         method:"POST"
       }),
     }),
-
+    submitFeedback: builder.mutation({
+      query: ({ courseId, rating, comment }) => ({
+          url: `/${courseId}/feedback`,
+          method: "POST",
+          body: {courseId, rating, comment },
+      })
+    }),
     completeCourse: builder.mutation({
         query:(courseId) => ({
             url:`/${courseId}/complete`,
@@ -41,5 +53,7 @@ export const {
 useGetCourseProgressQuery,
 useUpdateLectureProgressMutation,
 useCompleteCourseMutation,
-useInCompleteCourseMutation
+useInCompleteCourseMutation,
+useSubmitFeedbackMutation,
+useGetFeedbackQuery,
 } = courseProgressApi;

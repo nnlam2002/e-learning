@@ -1,11 +1,12 @@
 import { CourseProgress } from "../models/courseProgress.js";
 import { Course } from "../models/course.model.js";
-
+import { Review } from "../models/review.model.js";
 export const getCourseProgress = async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.id;
-
+    // console.log(req.id);
+    
     // step-1 fetch the user course progress
     let courseProgress = await CourseProgress.findOne({
       courseId,
@@ -97,6 +98,54 @@ export const updateLectureProgress = async (req, res) => {
     console.log(error);
   }
 };
+export const submitFeedback = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { rating, comment} = req.body;
+    const userId = req.id;
+    // const userName = req.nameUser
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const review = new Review({
+      courseId, // Dùng đúng tên trường trong schema
+      userId,
+      comment,
+      star: rating, // Dùng đúng tên trường trong schema
+    });
+
+    await review.save(); // Lưu review vào database
+    res.status(201).json({ message: "Feedback saved successfully", review });
+  }catch(error){
+    console.log(error);
+    
+  }
+};
+export const getFeedback = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const feedbackList = await Review.find({ courseId })
+      .populate("userId", "name photoUrl") // Thêm trường profilePicture
+      .sort({ createdAt: -1 });
+    console.log(feedbackList);
+    
+    return res.status(200).json({
+      success: true,
+      feedback: feedbackList || [],
+      message: feedbackList.length
+        ? "Feedback fetched successfully"
+        : "No feedback found for this course",
+    });
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch feedback. Please try again later.",
+    });
+  }
+};
+
+
 
 export const markAsCompleted = async (req, res) => {
   try {

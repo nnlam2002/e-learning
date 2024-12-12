@@ -6,11 +6,80 @@ import {
   useGetCourseProgressQuery,
   useInCompleteCourseMutation,
   useUpdateLectureProgressMutation,
+  useSubmitFeedbackMutation,
+  useGetFeedbackQuery,
 } from "@/features/api/courseProgressApi";
 import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import axios from "axios";
+const FeedbackSection = ({ courseId }) => {
+  const { data, error, isLoading, refetch } = useGetFeedbackQuery(courseId);
+  const [submitFeedback] = useSubmitFeedbackMutation();
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
+  const handleSubmitFeedback = async () => {
+    if (!rating || !comment) {
+      toast.error("Please provide a rating and comment.");
+      return;
+    }
+    try {
+      await submitFeedback({ courseId, rating, comment });
+      toast.success("Thank you for your feedback!");
+      setRating(0);
+      setComment("");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  };
+
+  if (isLoading) return <p>Loading feedback...</p>;
+
+  return (
+    <div className="mt-6">
+      <h3 className="font-semibold text-lg mb-4">Comments</h3>
+      {data?.feedback?.length > 0 ? (
+        data.feedback.map((feedback) => (
+          <div key={feedback._id} className="mb-4 border-b pb-2">
+            <div className="flex items-start mb-1">
+              {/* User Avatar */}
+              <img
+                src={feedback.userId?.photoUrl} // URL avatar hoặc hình mặc định
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full mr-3"
+              />
+              {/* User Feedback */}
+              <div className="flex flex-col">
+                <div className="flex items-center mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className={`text-sm ${
+                        i < feedback.star ? "text-yellow-500" : "text-gray-300"
+                      }`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <p className="text-gray-700">{feedback.comment}</p>
+                <p className="text-sm text-gray-500">
+                  By {feedback.userId?.name || "Anonymous"}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+      )}
+    </div>
+  );
+};
+
 
 const CourseProgress = () => {
   const params = useParams();
@@ -21,6 +90,9 @@ const CourseProgress = () => {
     useGetCourseProgressQuery(courseId);
 
   const [updateLectureProgress] = useUpdateLectureProgressMutation();
+  const [submitFeedback] = useSubmitFeedbackMutation();
+  const [rating, setRating] = useState(0); // Rating from 1-5
+  const [comment, setComment] = useState(""); // Comment text
   const [
     completeCourse,
     { data: markCompleteData, isSuccess: completedSuccess },
@@ -63,6 +135,22 @@ const CourseProgress = () => {
     await updateLectureProgress({ courseId, lectureId });
     refetch();
   };
+  const handleSubmitFeedback = async () => {
+    if (!rating || !comment) {
+      toast.error("Please provide a rating and comment.");
+      return;
+    }
+  
+    try {
+      await submitFeedback({ courseId, rating, comment });
+      toast.success("Thank you for your feedback!");
+      setRating(0);
+      setComment("");
+      refetch(); // Gọi lại API để cập nhật feedback
+    } catch (error) {
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  };  
   // Handle select a specific lecture to watch
   const handleSelectLecture = (lecture) => {
     setCurrentLecture(lecture);
@@ -124,6 +212,9 @@ const CourseProgress = () => {
               }`}
             </h3>
           </div>
+                  {/* Rating and Comments Section */}
+                  <FeedbackSection courseId={courseId} />
+
         </div>
         {/* Lecture Sidebar  */}
         <div className="flex flex-col w-full md:w-2/5 border-t md:border-t-0 md:border-l border-gray-200 md:pl-4 pt-4 md:pt-0">
