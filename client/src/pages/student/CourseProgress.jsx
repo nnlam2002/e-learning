@@ -21,7 +21,7 @@ const FeedbackSection = ({ courseId }) => {
   const [submitFeedback] = useSubmitFeedbackMutation();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-
+  const [filterStar, setFilterStar] = useState(0);
   const handleSubmitFeedback = async () => {
     if (!rating || !comment) {
       toast.error("Please provide a rating and comment.");
@@ -37,7 +37,14 @@ const FeedbackSection = ({ courseId }) => {
       toast.error("Failed to submit feedback. Please try again.");
     }
   };
-
+  const handleFilterFeedback = (star) => {
+    setFilterStar(star);
+    refetch(); // Gọi lại API nếu cần hoặc lọc dữ liệu phía client
+  };
+  const filteredFeedback =
+  filterStar > 0
+    ? data?.feedback?.filter((feedback) => feedback.star === filterStar)
+    : data?.feedback;
   if (isLoading) return <p>Loading feedback...</p>;
 
   return (
@@ -66,55 +73,67 @@ const FeedbackSection = ({ courseId }) => {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
-        <button
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={handleSubmitFeedback}
-        >
-          Submit
-        </button>
+        <div className="flex items-center mt-4">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            onClick={handleSubmitFeedback}
+          >
+            Submit
+          </button>
+          <select
+            className="ml-4 border border-gray-300 rounded-md p-2"
+            value={filterStar}
+            onChange={(e) => handleFilterFeedback(Number(e.target.value))}
+          >
+            <option value={0}>All Stars</option>
+            {[...Array(5)].map((_, i) => (
+              <option key={i} value={i + 1}>{`${i + 1} Star`}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Display feedback */}
-      <div>
-        <h4 className="font-semibold text-lg mb-4">Comments</h4>
-        {data?.feedback?.length > 0 ? (
-          data.feedback.map((feedback) => (
-            <div key={feedback._id} className="mb-6 border-b pb-4">
-  {/* Avatar người dùng */}
-  <div className="flex items-start space-x-4">
-    <img
-      src={feedback.userId?.photoUrl || `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`}
-      alt="User Avatar"
-      className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
-    />
-    <div className="flex-1">
-      {/* Đánh giá sao */}
-      <div className="flex items-center mb-2">
-        {[...Array(5)].map((_, i) => (
-          <span
-            key={i}
-            className={`text-xl cursor-pointer ${
-              i < feedback.star ? "text-yellow-500" : "text-gray-300"
-            }`}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-      {/* Nội dung bình luận */}
-      <p className="text-gray-800 text-base mb-2">{feedback.comment}</p>
-      {/* Thông tin người dùng */}
-      <p className="text-sm text-gray-500">
-        By <strong>{feedback.userId?.name || "Anonymous"}</strong>
-      </p>
-    </div>
-  </div>
-</div>
-          ))
-        ) : (
-          <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-        )}
-      </div>
+        {/* Display feedback */}
+        <div>
+          <h4 className="font-semibold text-lg mb-4">Comments</h4>
+          {filteredFeedback?.length > 0 ? (
+            filteredFeedback.map((feedback) => (
+              <div key={feedback._id} className="mb-6 border-b pb-4">
+                <div className="flex items-start space-x-4">
+                  <img
+                    src={
+                      feedback.userId?.photoUrl ||
+                      `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
+                    }
+                    alt="User Avatar"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
+                  />
+                  <div className="flex-1">
+                    {/* Star Ratings */}
+                    <div className="flex items-center mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <span
+                          key={i}
+                          className={`text-xl ${
+                            i < feedback.star ? "text-yellow-500" : "text-gray-300"
+                          }`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-gray-800 text-base mb-2">{feedback.comment}</p>
+                    <p className="text-sm text-gray-500">
+                      By <strong>{feedback.userId?.name || "Anonymous"}</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+          )}
+        </div>
     </div>
   );
 };
