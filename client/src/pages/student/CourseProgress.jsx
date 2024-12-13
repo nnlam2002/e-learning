@@ -81,7 +81,7 @@ const FeedbackSection = ({ courseId }) => {
             Submit
           </button>
           <select
-            className="ml-4 border border-gray-300 rounded-md p-2"
+            className="ml-4 border border-gray-300 dark:text-gray-800 rounded-md p-2"
             value={filterStar}
             onChange={(e) => handleFilterFeedback(Number(e.target.value))}
           >
@@ -122,7 +122,7 @@ const FeedbackSection = ({ courseId }) => {
                         </span>
                       ))}
                     </div>
-                    <p className="text-gray-800 text-base mb-2">{feedback.comment}</p>
+                    <p className="text-gray-800 dark:text-gray-200 text-base mb-2">{feedback.comment}</p>
                     <p className="text-sm text-gray-500">
                       By <strong>{feedback.userId?.name || "Anonymous"}</strong>
                     </p>
