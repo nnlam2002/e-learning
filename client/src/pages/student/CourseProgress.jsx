@@ -48,9 +48,9 @@ const FeedbackSection = ({ courseId }) => {
   if (isLoading) return <p>Loading feedback...</p>;
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 bg-card text-card-foreground p-6 rounded-md shadow-sm">
       <h3 className="font-semibold text-lg mb-4">Feedback Section</h3>
-
+  
       {/* Form to add feedback */}
       <div className="mb-6">
         <h4 className="font-semibold text-lg">Write your feedback</h4>
@@ -60,7 +60,7 @@ const FeedbackSection = ({ courseId }) => {
               key={i}
               onClick={() => setRating(i + 1)}
               className={`text-xl ${
-                i < rating ? "text-yellow-500" : "text-gray-300"
+                i < rating ? "text-primary" : "text-muted-foreground"
               }`}
             >
               ★
@@ -68,20 +68,20 @@ const FeedbackSection = ({ courseId }) => {
           ))}
         </div>
         <textarea
-          className="w-full border border-gray-300 rounded-md p-2 mt-2"
+          className="w-full border border-border rounded-md p-2 mt-2 bg-input text-foreground placeholder-muted-foreground"
           placeholder="Write your comment here..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
         <div className="flex items-center mt-4">
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
             onClick={handleSubmitFeedback}
           >
             Submit
           </button>
           <select
-            className="ml-4 border border-gray-300 rounded-md p-2"
+            className="ml-4 border border-border rounded-md p-2 bg-input text-foreground"
             value={filterStar}
             onChange={(e) => handleFilterFeedback(Number(e.target.value))}
           >
@@ -92,50 +92,59 @@ const FeedbackSection = ({ courseId }) => {
           </select>
         </div>
       </div>
-
-        {/* Display feedback */}
-        <div>
-          <h4 className="font-semibold text-lg mb-4">Comments</h4>
-          {filteredFeedback?.length > 0 ? (
-            filteredFeedback.map((feedback) => (
-              <div key={feedback._id} className="mb-6 border-b pb-4">
-                <div className="flex items-start space-x-4">
-                  <img
-                    src={
-                      feedback.userId?.photoUrl ||
-                      `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
-                    }
-                    alt="User Avatar"
-                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
-                  />
-                  <div className="flex-1">
-                    {/* Star Ratings */}
-                    <div className="flex items-center mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-xl ${
-                            i < feedback.star ? "text-yellow-500" : "text-gray-300"
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-800 text-base mb-2">{feedback.comment}</p>
-                    <p className="text-sm text-gray-500">
-                      By <strong>{feedback.userId?.name || "Anonymous"}</strong>
-                    </p>
+  
+      {/* Display feedback */}
+      <div>
+        <h4 className="font-semibold text-lg mb-4">Comments</h4>
+        {filteredFeedback?.length > 0 ? (
+          filteredFeedback.map((feedback) => (
+            <div
+              key={feedback._id}
+              className="mb-6 border-b pb-4 border-border"
+            >
+              <div className="flex items-start space-x-4">
+                <img
+                  src={
+                    feedback.userId?.photoUrl ||
+                    `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
+                  }
+                  alt="User Avatar"
+                  className="w-14 h-14 rounded-full object-cover border border-border shadow-sm mt-1"
+                />
+                <div className="flex-1">
+                  {/* Star Ratings */}
+                  <div className="flex items-center mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <span
+                        key={i}
+                        className={`text-xl ${
+                          i < feedback.star
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
                   </div>
+                  <p className="text-muted-foreground text-base mb-2">
+                    {feedback.comment}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    By <strong>{feedback.userId?.name || "Anonymous"}</strong>
+                  </p>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-          )}
-        </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted-foreground">
+            No comments yet. Be the first to comment!
+          </p>
+        )}
+      </div>
     </div>
-  );
+  );  
 };
 
 
