@@ -14,9 +14,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
+import ReactPlayer from "react-player";
 const FeedbackSection = ({ courseId }) => {
   const { data, error, isLoading, refetch } = useGetFeedbackQuery(courseId);
-  console.log(data);
   
   const [submitFeedback] = useSubmitFeedbackMutation();
   const [rating, setRating] = useState(0);
@@ -54,13 +54,13 @@ const FeedbackSection = ({ courseId }) => {
       {/* Form to add feedback */}
       <div className="mb-6">
         <h4 className="font-semibold text-lg">Write your feedback</h4>
-        <div className="flex items-center mt-2">
+          <div className="flex items-center mt-2">
           {[...Array(5)].map((_, i) => (
             <button
               key={i}
               onClick={() => setRating(i + 1)}
               className={`text-xl ${
-                i < rating ? "text-primary" : "text-muted-foreground"
+                i < rating ? "text-yellow-500" : "text-gray-300"
               }`}
             >
               ★
@@ -81,7 +81,7 @@ const FeedbackSection = ({ courseId }) => {
             Submit
           </button>
           <select
-            className="ml-4 border border-border rounded-md p-2 bg-input text-foreground"
+            className="ml-4 border border-gray-300 dark:text-gray-800 rounded-md p-2"
             value={filterStar}
             onChange={(e) => handleFilterFeedback(Number(e.target.value))}
           >
@@ -92,57 +92,48 @@ const FeedbackSection = ({ courseId }) => {
           </select>
         </div>
       </div>
-  
-      {/* Display feedback */}
-      <div>
-        <h4 className="font-semibold text-lg mb-4">Comments</h4>
-        {filteredFeedback?.length > 0 ? (
-          filteredFeedback.map((feedback) => (
-            <div
-              key={feedback._id}
-              className="mb-6 border-b pb-4 border-border"
-            >
-              <div className="flex items-start space-x-4">
-                <img
-                  src={
-                    feedback.userId?.photoUrl ||
-                    `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
-                  }
-                  alt="User Avatar"
-                  className="w-14 h-14 rounded-full object-cover border border-border shadow-sm mt-1"
-                />
-                <div className="flex-1">
-                  {/* Star Ratings */}
-                  <div className="flex items-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className={`text-xl ${
-                          i < feedback.star
-                            ? "text-primary"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        ★
-                      </span>
-                    ))}
+
+        {/* Display feedback */}
+        <div>
+          <h4 className="font-semibold text-lg mb-4">Comments</h4>
+          {filteredFeedback?.length > 0 ? (
+            filteredFeedback.map((feedback) => (
+              <div key={feedback._id} className="mb-6 border-b pb-4">
+                <div className="flex items-start space-x-4">
+                  <img
+                    src={
+                      feedback.userId?.photoUrl ||
+                      `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
+                    }
+                    alt="User Avatar"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
+                  />
+                  <div className="flex-1">
+                    {/* Star Ratings */}
+                    <div className="flex items-center mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <span
+                          key={i}
+                          className={`text-xl ${
+                            i < feedback.star ? "text-yellow-500" : "text-gray-300"
+                          }`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-gray-800 dark:text-gray-200 text-base mb-2">{feedback.comment}</p>
+                    <p className="text-sm text-gray-500">
+                      By <strong>{feedback.userId?.name || "Anonymous"}</strong>
+                    </p>
                   </div>
-                  <p className="text-muted-foreground text-base mb-2">
-                    {feedback.comment}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    By <strong>{feedback.userId?.name || "Anonymous"}</strong>
-                  </p>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-muted-foreground">
-            No comments yet. Be the first to comment!
-          </p>
-        )}
-      </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+          )}
+        </div>
     </div>
   );  
 };
@@ -170,8 +161,6 @@ const CourseProgress = () => {
   ] = useInCompleteCourseMutation();
 
   useEffect(() => {
-    console.log(markCompleteData);
-
     if (completedSuccess) {
       refetch();
       toast.success(markCompleteData.message);
@@ -221,7 +210,7 @@ const CourseProgress = () => {
   // Handle select a specific lecture to watch
   const handleSelectLecture = (lecture) => {
     setCurrentLecture(lecture);
-    handleLectureProgress(lecture._id);
+    // handleLectureProgress(lecture._id);
   };
 
 
@@ -257,13 +246,15 @@ const CourseProgress = () => {
         {/* Video section  */}
         <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4">
           <div>
-            <video
-              src={currentLecture?.videoUrl || initialLecture.videoUrl}
+            <ReactPlayer
+              url={currentLecture?.videoUrl || initialLecture.videoUrl}
               controls
               className="w-full h-auto md:rounded-lg"
-              onPlay={() =>
+              onEnded={() =>
                 handleLectureProgress(currentLecture?._id || initialLecture._id)
               }
+              onProgressUpdate={setCurrentLecture}
+              progressData={currentLecture}
             />
           </div>
           {/* Display current watching lecture title */}
