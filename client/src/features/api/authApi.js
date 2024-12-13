@@ -39,7 +39,8 @@ export const authApi = createApi({
                 } catch (error) {
                     console.log(error);
                 }
-            }
+            },
+            invalidatesTags: ['User'],
         }),
         forgotPassword: builder.mutation({
             query: (inputData) => ({
@@ -73,13 +74,15 @@ export const authApi = createApi({
                 } catch (error) {
                     console.log(error);
                 }
-            }
+            },
+            providesTags: ['User'],
         }),
         loadUserById: builder.query({
             query: (userId) => ({
                 url:`profile/${userId}`,
                 method:"GET"
             }),
+            providesTags: ['User'],
         }),
         updateUser: builder.mutation({
             query: (formData) => ({
