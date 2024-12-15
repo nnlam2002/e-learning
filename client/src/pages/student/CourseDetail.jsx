@@ -1,4 +1,5 @@
 import BuyCourseButton from "@/components/BuyCourseButton";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +16,31 @@ import { BadgeInfo, Lock, PlayCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { useNavigate, useParams } from "react-router-dom";
+const renderStars = (rating) => {
+  const fullStars = Math.round(rating);  // Làm tròn điểm rating
+  const emptyStars = 5 - fullStars;  // Tính số sao trống
 
+  const stars = [];
+  
+  // Vẽ sao đầy đủ
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(<Star key={`full-${i}`} className="text-yellow-500" size={18} fill="currentColor" />);
+  }
+
+  // Vẽ sao trống
+  for (let i = 0; i < emptyStars; i++) {
+    stars.push(<Star key={`empty-${i}`} className="text-gray-400" size={18} fill="currentColor" />);
+  }
+
+  return stars;
+};
 const CourseDetail = () => {
   const params = useParams();
   const courseId = params.courseId;
   const navigate = useNavigate();
   const { data, isLoading, isError } =
     useGetCourseDetailWithStatusQuery(courseId);
-
+  
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] = useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
 
@@ -80,6 +98,10 @@ const CourseDetail = () => {
                 <p>Last updated {course?.createdAt.split("T")[0]}</p>
               </div>
               <p className="text-white">Students enrolled: {course?.enrolledStudents.length}</p>
+              <div className="flex items-center gap-1 mt-2"> {/* Giảm khoảng cách và xích lên */}
+                {renderStars(course?.averageRating)} {/* Gọi hàm renderStars để vẽ sao */}
+                <span className="text-white ml-2">({course?.totalReviews} feedbacks)</span>
+              </div>
             </div>
 
             <img

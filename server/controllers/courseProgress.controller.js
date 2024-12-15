@@ -114,6 +114,15 @@ export const submitFeedback = async (req, res) => {
     });
 
     await review.save(); // Lưu review vào database
+    // Tính lại tổng số sao và số lượng feedback cho khóa học
+    const reviews = await Review.find({ courseId }); // Lấy tất cả reviews của khóa học
+    const totalStars = reviews.reduce((acc, review) => acc + review.star, 0);
+    const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+    const totalReviews = reviews.length;
+    await Course.findByIdAndUpdate(courseId, {
+      averageRating: parseFloat(averageRating),
+      totalReviews: totalReviews,
+    });
     res.status(201).json({ message: "Feedback saved successfully", review });
   }catch(error){
     console.log(error);

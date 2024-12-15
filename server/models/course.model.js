@@ -40,6 +40,16 @@ const courseSchema = new mongoose.Schema({
     isPublished:{
         type:Boolean,
         default:false
+    },
+    averageRating: {
+        type: Number,
+        default: 0, // Mặc định không có đánh giá
+        min: 0,
+        max: 5
+    },
+    totalReviews: {
+        type: Number,
+        default: 0 // Số lượng đánh giá
     }
 
 }, {timestamps:true});

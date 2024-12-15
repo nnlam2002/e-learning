@@ -83,9 +83,25 @@ export const getPublishedCourse = async (_, res) => {
                 message: "Course not found"
             })
         }
+        const coursesWithRatings = await Promise.all(
+            courses.map(async (course) => {
+                // Tìm các đánh giá cho khóa học này
+                const reviews = await Review.find({ courseId: course._id });
+                
+                const totalStars = reviews.reduce((acc, review) => acc + review.star, 0);
+                const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+                const totalReviews = reviews.length
+
+                return {
+                    ...course.toObject(),
+                    averageRating: parseFloat(averageRating), // Thêm thuộc tính averageRating
+                    totalReviews,
+                };
+            })
+        );
         return res.status(200).json({
-            courses,
-        })
+            courses: coursesWithRatings,
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -193,6 +209,7 @@ export const editCourse = async (req, res) => {
     }
 }
 export const getCourseById = async (req, res) => {
+    
     try {
         const { courseId } = req.params;
 
@@ -247,6 +264,7 @@ export const createLecture = async (req, res) => {
     }
 }
 export const getCourseLecture = async (req, res) => {
+    
     try {
         const { courseId } = req.params;
         const course = await Course.findById(courseId).populate("lectures");
