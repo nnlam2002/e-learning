@@ -85,7 +85,6 @@ export const getPublishedCourse = async (_, res) => {
                 message: "Course not found"
             })
         }
-
         const coursesWithRatings = await Promise.all(
             courses.map(async (course) => {
                 // Tìm các đánh giá cho khóa học này
