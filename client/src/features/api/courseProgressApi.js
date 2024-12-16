@@ -28,10 +28,17 @@ export const courseProgressApi = createApi({
       }),
     }),
     submitFeedback: builder.mutation({
-      query: ({ courseId, rating, comment }) => ({
+      query: ({ courseId, rating, feedback }) => ({
           url: `/${courseId}/feedback`,
           method: "POST",
-          body: {courseId, rating, comment },
+          body: {courseId, rating, feedback },
+      })
+    }),
+    submitComment: builder.mutation({
+      query: ({ courseId, comment }) => ({
+          url: `/${courseId}/comment`,
+          method: "POST",
+          body: {courseId, comment },
       })
     }),
     completeCourse: builder.mutation({
@@ -55,5 +62,6 @@ useUpdateLectureProgressMutation,
 useCompleteCourseMutation,
 useInCompleteCourseMutation,
 useSubmitFeedbackMutation,
+useSubmitCommentMutation,
 useGetFeedbackQuery,
 } = courseProgressApi;

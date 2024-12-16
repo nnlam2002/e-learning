@@ -1,6 +1,7 @@
 import { CourseProgress } from "../models/courseProgress.js";
 import { Course } from "../models/course.model.js";
 import { Review } from "../models/review.model.js";
+import { Comment } from "../models/comment.model.js";
 export const getCourseProgress = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -98,18 +99,49 @@ export const updateLectureProgress = async (req, res) => {
     console.log(error);
   }
 };
-export const submitFeedback = async (req, res) => {
+export const submitComment = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { rating, comment} = req.body;
+    const {comment} = req.body;
     const userId = req.id;
+    console.log("haha");
+    
     // const userName = req.nameUser
+    console.log(comment);
+    
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
-    const review = new Review({
+    const newComment = new Comment({
       courseId, // Dùng đúng tên trường trong schema
       userId,
       comment,
+    });
+    await newComment.save(); // Lưu review vào database
+    res.status(201).json({ message: "Feedback saved successfully", newComment });
+  }catch(error){
+    console.log(error);
+  }
+};
+export const submitFeedback = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { rating, feedback} = req.body;
+    const userId = req.id;
+    // const userName = req.nameUser
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    let existingReview = await Review.findOne({ courseId, userId });
+    if (existingReview) {
+      // Nếu đã có review, cập nhật review hiện tại
+      existingReview.feedback = feedback;
+      existingReview.star = rating;
+
+      await existingReview.save(); // Lưu lại review đã cập nhật
+
+      res.status(200).json({ message: "Feedback updated successfully", review: existingReview });
+    } else {
+    const review = new Review({
+      courseId, // Dùng đúng tên trường trong schema
+      userId,
+      feedback,
       star: rating, // Dùng đúng tên trường trong schema
     });
 
@@ -124,6 +156,7 @@ export const submitFeedback = async (req, res) => {
       totalReviews: totalReviews,
     });
     res.status(201).json({ message: "Feedback saved successfully", review });
+  }
   }catch(error){
     console.log(error);
     
@@ -136,10 +169,13 @@ export const getFeedback = async (req, res) => {
     const feedbackList = await Review.find({ courseId })
       .populate("userId", "name photoUrl") // Thêm trường profilePicture
       .sort({ createdAt: -1 });
-    
+    const commentList = await Comment.find({ courseId })
+      .populate("userId", "name photoUrl") // Thêm trường profilePicture
+      .sort({ createdAt: -1 });
     return res.status(200).json({
       success: true,
       feedback: feedbackList || [],
+      comment: commentList || [],
       message: feedbackList.length
         ? "Feedback fetched successfully"
         : "No feedback found for this course",

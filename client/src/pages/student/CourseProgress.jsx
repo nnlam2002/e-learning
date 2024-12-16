@@ -6,6 +6,7 @@ import {
   useGetCourseProgressQuery,
   useInCompleteCourseMutation,
   useUpdateLectureProgressMutation,
+  useSubmitCommentMutation,
   useSubmitFeedbackMutation,
   useGetFeedbackQuery,
 } from "@/features/api/courseProgressApi";
@@ -19,18 +20,36 @@ const FeedbackSection = ({ courseId }) => {
   const { data, error, isLoading, refetch } = useGetFeedbackQuery(courseId);
   
   const [submitFeedback] = useSubmitFeedbackMutation();
+  const [submitComment] = useSubmitCommentMutation();
   const [rating, setRating] = useState(0);
+  const [activeTab, setActiveTab] = useState("feedback"); // 'feedback' | 'comment'
+  const [feedback, setFeedback] = useState("");
   const [comment, setComment] = useState("");
   const [filterStar, setFilterStar] = useState(0);
   const handleSubmitFeedback = async () => {
-    if (!rating || !comment) {
-      toast.error("Please provide a rating and comment.");
+    if (!rating || !feedback) {
+      toast.error("Please provide a rating and feedback.");
       return;
     }
     try {
-      await submitFeedback({ courseId, rating, comment });
+      await submitFeedback({ courseId, rating, feedback });
       toast.success("Thank you for your feedback!");
       setRating(0);
+      setFeedback("");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  };
+  const handleSubmitComment = async () => {
+    
+    if (!comment) {
+      toast.error("Please provide a comment.");
+      return;
+    }
+    try {
+      await submitComment({ courseId, comment });
+      toast.success("Thank you for your comment!");
       setComment("");
       refetch();
     } catch (error) {
@@ -41,46 +60,68 @@ const FeedbackSection = ({ courseId }) => {
     setFilterStar(star);
     refetch(); // Gọi lại API nếu cần hoặc lọc dữ liệu phía client
   };
-  const filteredFeedback =
-  filterStar > 0
-    ? data?.feedback?.filter((feedback) => feedback.star === filterStar)
-    : data?.feedback;
+  const filteredData =
+  activeTab === "feedback"
+    ? filterStar > 0
+      ? data?.feedback?.filter((feedback) => feedback.star === filterStar)
+      : data?.feedback
+    : data?.comment;
   if (isLoading) return <p>Loading feedback...</p>;
 
   return (
     <div className="mt-6 bg-card text-card-foreground p-6 rounded-md shadow-sm">
-      <h3 className="font-semibold text-lg mb-4">Feedback Section</h3>
   
       {/* Form to add feedback */}
       <div className="mb-6">
-        <h4 className="font-semibold text-lg">Write your feedback</h4>
-          <div className="flex items-center mt-2">
-          {[...Array(5)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setRating(i + 1)}
-              className={`text-xl ${
-                i < rating ? "text-yellow-500" : "text-gray-300"
-              }`}
-            >
-              ★
-            </button>
-          ))}
-        </div>
-        <textarea
-          className="w-full border border-border rounded-md p-2 mt-2 bg-input text-foreground placeholder-muted-foreground"
-          placeholder="Write your comment here..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-        <div className="flex items-center mt-4">
+      <div className="flex border-b border-gray-200 mb-4">
+    <button
+      className={`px-4 py-2 font-semibold ${
+        activeTab === "feedback" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-600"
+      }`}
+      onClick={() => setActiveTab("feedback")}
+    >
+      Feedback
+    </button>
+    <button
+      className={`px-4 py-2 font-semibold ${
+        activeTab === "comment" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-600"
+      }`}
+      onClick={() => setActiveTab("comment")}
+    >
+      Comment
+    </button>
+  </div>
+
+  {/* Nội dung của Feedback */}
+  {activeTab === "feedback" && (
+    <div>
+      <h4 className="font-semibold text-lg">Write your feedback</h4>
+      <div className="flex items-center mt-2">
+        {[...Array(5)].map((_, i) => (
           <button
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
-            onClick={handleSubmitFeedback}
+            key={i}
+            onClick={() => setRating(i + 1)}
+            className={`text-xl ${
+              i < rating ? "text-yellow-500" : "text-gray-300"
+            }`}
           >
-            Submit
+            ★
           </button>
-          <select
+        ))}
+      </div>
+      <textarea
+        className="w-full border border-border rounded-md p-2 mt-2 bg-input text-foreground placeholder-muted-foreground"
+        placeholder="Write your feedback here..."
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+      />
+      <div className="flex items-center mt-4">
+        <button
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+          onClick={handleSubmitFeedback}
+        >
+          Submit Feedback
+        </button>          <select
             className="ml-4 border border-gray-300 dark:text-gray-800 rounded-md p-2"
             value={filterStar}
             onChange={(e) => handleFilterFeedback(Number(e.target.value))}
@@ -90,48 +131,77 @@ const FeedbackSection = ({ courseId }) => {
               <option key={i} value={i + 1}>{`${i + 1} Star`}</option>
             ))}
           </select>
-        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Nội dung của Comment */}
+  {activeTab === "comment" && (
+    <div>
+      <h4 className="font-semibold text-lg">Write your comment</h4>
+      <textarea
+        className="w-full border border-border rounded-md p-2 mt-2 bg-input text-foreground placeholder-muted-foreground"
+        placeholder="Write your comment here..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      <div className="flex items-center mt-4">
+        <button
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+          onClick={handleSubmitComment}
+        >
+          Submit Comment
+        </button>
+      </div>
+    </div>
+  )}
       </div>
 
         {/* Display feedback */}
+        {/* Display data for the active tab */}
         <div>
-          <h4 className="font-semibold text-lg mb-4">Comments</h4>
-          {filteredFeedback?.length > 0 ? (
-            filteredFeedback.map((feedback) => (
-              <div key={feedback._id} className="mb-6 border-b pb-4">
+          <h4 className="font-semibold text-lg mb-4">
+            {activeTab === "feedback" ? "Feedbacks" : "Comments"}
+          </h4>
+          {filteredData?.length > 0 ? (
+            filteredData.map((item) => (
+              <div key={item._id} className="mb-6 border-b pb-4">
                 <div className="flex items-start space-x-4">
                   <img
                     src={
-                      feedback.userId?.photoUrl ||
-                      `https://avatar.iran.liara.run/username?username=${feedback.userId?.name}`
+                      item.userId?.photoUrl ||
+                      `https://avatar.iran.liara.run/username?username=${item.userId?.name}`
                     }
                     alt="User Avatar"
                     className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
                   />
                   <div className="flex-1">
-                    {/* Star Ratings */}
-                    <div className="flex items-center mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-xl ${
-                            i < feedback.star ? "text-yellow-500" : "text-gray-300"
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-800 dark:text-gray-200 text-base mb-2">{feedback.comment}</p>
+                    {activeTab === "feedback" && (
+                      <div className="flex items-center mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <span
+                            key={i}
+                            className={`text-xl ${
+                              i < item.star ? "text-yellow-500" : "text-gray-300"
+                            }`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-gray-800 dark:text-gray-200 text-base mb-2">
+                      {item.feedback || item.comment}
+                    </p>
                     <p className="text-sm text-gray-500">
-                      By <strong>{feedback.userId?.name || "Anonymous"}</strong>
+                      By <strong>{item.userId?.name || "Anonymous"}</strong>
                     </p>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+            <p className="text-gray-500">No {activeTab} yet. Be the first to comment!</p>
           )}
         </div>
     </div>
@@ -142,7 +212,6 @@ const FeedbackSection = ({ courseId }) => {
 const CourseProgress = () => {
   const params = useParams();
   const navigate = useNavigate();
-
   const courseId = params.courseId;
   const { data, isLoading, isError, refetch } =
     useGetCourseProgressQuery(courseId);
@@ -150,7 +219,7 @@ const CourseProgress = () => {
   const [updateLectureProgress] = useUpdateLectureProgressMutation();
   const [submitFeedback] = useSubmitFeedbackMutation();
   const [rating, setRating] = useState(0); // Rating from 1-5
-  const [comment, setComment] = useState(""); // Comment text
+  const [feedback, setFeedback] = useState(""); // Comment text
   const [
     completeCourse,
     { data: markCompleteData, isSuccess: completedSuccess },
@@ -190,23 +259,7 @@ const CourseProgress = () => {
   const handleLectureProgress = async (lectureId) => {
     await updateLectureProgress({ courseId, lectureId });
     refetch();
-  };
-  const handleSubmitFeedback = async () => {
-    if (!rating || !comment) {
-      toast.error("Please provide a rating and comment.");
-      return;
-    }
-  
-    try {
-      await submitFeedback({ courseId, rating, comment });
-      toast.success("Thank you for your feedback!");
-      setRating(0);
-      setComment("");
-      refetch(); // Gọi lại API để cập nhật feedback
-    } catch (error) {
-      toast.error("Failed to submit feedback. Please try again.");
-    }
-  };  
+  }; 
   // Handle select a specific lecture to watch
   const handleSelectLecture = (lecture) => {
     setCurrentLecture(lecture);

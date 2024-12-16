@@ -10,9 +10,9 @@ const reviewSchema = new mongoose.Schema(
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
-      required: true, // Bắt buộc
+      required: true, // Bắt buộc 
     },
-    comment: {
+    feedback: {
       type: String,
       required: true, // Bắt buộc
     },
@@ -25,5 +25,6 @@ const reviewSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+reviewSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 export const Review = mongoose.model("Review", reviewSchema);

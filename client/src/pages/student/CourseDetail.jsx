@@ -9,6 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  useGetFeedbackQuery,
+} from "@/features/api/courseProgressApi";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useGetCourseDetailWithStatusQuery } from "@/features/api/purchaseApi";
@@ -16,6 +19,20 @@ import { BadgeInfo, Lock, PlayCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { useNavigate, useParams } from "react-router-dom";
+const renderStarRating = (rating) => {
+  const stars = [];
+  for (let i = 0; i < 5; i++) {
+    stars.push(
+      <Star
+        key={i}
+        className={i < rating ? "text-yellow-500" : "text-gray-400"}
+        size={18}
+        fill="currentColor"
+      />
+    );
+  }
+  return stars;
+};
 const renderStars = (rating) => {
   const fullStars = Math.round(rating);  // Làm tròn điểm rating
   const emptyStars = 5 - fullStars;  // Tính số sao trống
@@ -33,6 +50,116 @@ const renderStars = (rating) => {
   }
 
   return stars;
+};
+const CourseFeedback = () => {
+  const [filterStars, setFilterStars] = useState(0);
+  const { courseId } = useParams();
+  const { data, error, isLoading } = useGetFeedbackQuery(courseId);
+  
+  if (isLoading) {
+    return <p className="text-gray-500">Loading feedback...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">Failed to load feedback. Please try again later.</p>;
+  }
+
+  const feedbacks = data.feedback || [];
+  console.log(feedbacks);
+  
+  const averageRating =
+    feedbacks.reduce((sum, fb) => sum + fb.star, 0) / feedbacks.length || 0;
+
+  const filteredFeedbacks =
+    filterStars > 0
+      ? feedbacks.filter((fb) => Math.round(fb.star) === filterStars)
+      : feedbacks;
+
+  const starCounts = Array(5)
+    .fill(0)
+    .map(
+      (_, index) =>
+        feedbacks.filter((fb) => Math.round(fb.star) === 5 - index).length
+    );
+
+  return (
+<Card className="my-8 mx-auto max-w-4xl">
+  <CardHeader>
+    <CardTitle>Student Feedback</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    {/* Summary Section: Star Ratings */}
+    <div>
+      <div className="flex items-center justify-between">
+        {/* Average Rating */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold">{averageRating.toFixed(1)}</h1>
+          <div className="flex justify-center">
+            {renderStarRating(Math.round(averageRating))}
+          </div>
+          <p className="text-sm text-gray-500">Course Rating</p>
+        </div>
+
+        {/* Star Counts */}
+        <div className="flex-1 space-y-2 ml-8">
+          {starCounts.map((count, index) => (
+            <div key={index} className="flex items-center">
+              <span className="text-sm font-medium">{5 - index} Stars</span>
+              <div className="flex-1 mx-2 bg-gray-200 rounded-full h-3">
+                <div
+                  className="bg-yellow-500 h-3 rounded-full"
+                  style={{
+                    width: `${(count / feedbacks.length) * 100}%`,
+                  }}
+                ></div>
+              </div>
+              <span className="text-sm text-gray-600">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <Separator />
+
+    {/* Feedback List */}
+            <div>
+          <h4 className="font-semibold text-lg mb-4">
+            Feedbacks
+          </h4>
+          {feedbacks?.length > 0 ? (
+            feedbacks.map((fb) => (
+              <div key={fb._id} className="mb-6 border-b pb-4">
+                <div className="flex items-start space-x-4">
+                  <img
+                    src={
+                      fb.userId?.photoUrl ||
+                      `https://avatar.iran.liara.run/username?username=${fb.userId?.name}`
+                    }
+                    alt="User Avatar"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-300 shadow-sm mt-1"
+                  />
+                  <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        {renderStarRating(fb.star)} {/* Giữ lại phần render ngôi sao */}
+                      </div>
+                    <p className="text-gray-800 dark:text-gray-200 text-base mb-2">
+                      {fb.comment || fb.feedback}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      By <strong>{fb.userId?.name || "Anonymous"}</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No feedback yet. Be the first to comment!</p>
+          )}
+        </div>
+  </CardContent>
+</Card>
+  );
 };
 const CourseDetail = () => {
   const params = useParams();
@@ -179,6 +306,10 @@ const CourseDetail = () => {
           </Card>
         </div>
       </div>
+            <CourseFeedback 
+        feedbacks={course.reviews} 
+        averageRating={course.averageRating} 
+      />
       <Dialog open={showFreePreviewDialog} onOpenChange={() => {
                 setShowFreePreviewDialog(false)
                 setDisplayCurrentVideoFreePreview(null)
