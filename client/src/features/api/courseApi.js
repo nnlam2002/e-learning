@@ -46,6 +46,12 @@ export const courseApi = createApi({
         method: "GET",
       }),
     }),
+    getFeedback: builder.query({
+      query: () => ({
+        url: "/published-courses",
+        method: "GET",
+      }),
+    }),
     getCreatorCourse: builder.query({
       query: () => ({
         url: "",
@@ -80,6 +86,7 @@ export const courseApi = createApi({
         url: `/${courseId}`,
         method: "GET",
       }),
+      providesTags: ["Refetch_Creator_Course"],
     }),
     createLecture: builder.mutation({
       query: ({ lectureTitle, courseId }) => ({
@@ -87,6 +94,7 @@ export const courseApi = createApi({
         method: "POST",
         body: { lectureTitle },
       }),
+      invalidatesTags: ["Refetch_Lecture"],
     }),
     getCourseLecture: builder.query({
       query: (courseId) => ({
@@ -107,6 +115,7 @@ export const courseApi = createApi({
         method: "POST",
         body: { lectureTitle, videoInfo, isPreviewFree },
       }),
+      invalidatesTags: ["Refetch_Lecture"],
     }),
     removeLecture: builder.mutation({
       query: (lectureId) => ({
@@ -120,6 +129,7 @@ export const courseApi = createApi({
         url: `/lecture/${lectureId}`,
         method: "GET",
       }),
+      providesTags: ["Refetch_Lecture"],
     }),
     publishCourse: builder.mutation({
       query: ({ courseId, query }) => ({
@@ -134,12 +144,20 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
+    recommendCourses: builder.mutation({
+      query: ({ courseId, courses }) => ({
+        url: "/recommend",
+        method: "POST",
+        body: { courseId, courses },
+      }),
+    }),
   }),
 });
 export const {
   useCreateCourseMutation,
   useGetSearchCourseQuery,
   useGetPublishedCourseQuery,
+  useGetFeedbackQuery,
   useGetCreatorCourseQuery,
   useGetCreatorCourseByIdQuery,
   useGetAllCourseQuery,
@@ -151,5 +169,6 @@ export const {
   useRemoveLectureMutation,
   useGetLectureByIdQuery,
   usePublishCourseMutation,
-  useRemoveCourseMutation
+  useRemoveCourseMutation,
+  useRecommendCoursesMutation
 } = courseApi;

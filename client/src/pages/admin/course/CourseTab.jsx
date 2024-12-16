@@ -72,7 +72,7 @@ const CourseTab = () => {
         courseTitle: course.courseTitle,
         subTitle: course.subTitle,
         description: course.description,
-        category: course.category,
+        category: course.category._id,
         courseLevel: course.courseLevel,
         coursePrice: course.coursePrice,
         courseThumbnail: "",

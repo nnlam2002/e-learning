@@ -12,6 +12,7 @@ const Courses = () => {
 
   const handleExploreMore = () => {
     setVisibleCount((prevCount) => prevCount + 4);
+    refetch();
   };
 
   return (

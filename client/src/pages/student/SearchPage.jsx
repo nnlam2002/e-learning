@@ -50,9 +50,12 @@ const SearchPage = () => {
           <Button type="submit" className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-r-full hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors duration-300">Search</Button>
         </form>
       </div>
-      <h1 className="text-center font-bold text-xl md:text-2xl mt-4 italic">Result for {""}
-        <span className="text-blue-800 font-bold italic">{query}</span>
-      </h1>
+      {query && (
+        <h1 className="text-center font-bold text-xl md:text-2xl mt-4 italic">Result for {""}
+          <span className="text-blue-800 font-bold italic">{query}</span>
+        </h1>
+      )}
+
 
       <div className="flex flex-col md:flex-row gap-10">
         <Filter handleFilterChange={handleFilterChange} />

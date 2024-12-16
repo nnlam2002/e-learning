@@ -34,9 +34,15 @@ const Navbar = () => {
   const logoutHandler = async () => {
     await logoutUser();
   };
+  const handleLogoClick = () => {
+    navigate("/");
+    window.location.reload(); // Reload lại trang khi click vào logo
+    
+  };
 
   useEffect(() => {
     if (isSuccess) {
+      localStorage.removeItem('recommendedCourses');
       toast.success(data?.message || "User log out.");
       navigate("/login");
     }
@@ -48,7 +54,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto hidden md:flex justify-between items-center gap-10 h-full">
         <div className="flex items-center gap-2">
           <School size={"30"} />
-          <Link to="/">
+          <Link to="/" onClick={handleLogoClick}>
             <h1 className="hidden md:block font-extrabold text-2xl">
               E-Learning
             </h1>
@@ -117,6 +123,12 @@ export default Navbar;
 
 const MobileNavbar = ({user}) => {
   const navigate = useNavigate();
+  const handleLogoClick = () => {
+    navigate("/")
+    window.location.reload(); // Reload lại trang khi click vào logo
+
+    
+  };
   
   return (
     <Sheet>
@@ -131,7 +143,12 @@ const MobileNavbar = ({user}) => {
       </SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
-          <SheetTitle> <Link to="/">E-Learning</Link></SheetTitle>
+          <SheetTitle>
+          <Link to="/" onClick={handleLogoClick}>
+            <h1 className="hidden md:block font-extrabold text-2xl">
+              E-Learning
+            </h1>
+          </Link></SheetTitle>
           <DarkMode />
         </SheetHeader>
         <Separator className="mr-2" />

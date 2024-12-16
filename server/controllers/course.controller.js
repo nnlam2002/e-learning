@@ -4,6 +4,8 @@ import { Course } from "../models/course.model.js";
 import { Review } from "../models/review.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
+import { exec } from 'child_process';
+import path from 'path';
 
 export const createCourse = async (req, res) => {
     try {
@@ -83,8 +85,29 @@ export const getPublishedCourse = async (_, res) => {
                 message: "Course not found"
             })
         }
+
+        const coursesWithRatings = await Promise.all(
+            courses.map(async (course) => {
+                // Tìm các đánh giá cho khóa học này
+                const reviews = await Review.find({ courseId: course._id });
+                
+                const totalStars = reviews.reduce((acc, review) => acc + review.star, 0);
+                const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+                const totalReviews = reviews.length
+
+                return {
+                    ...course.toObject(),
+                    averageRating: parseFloat(averageRating), // Thêm thuộc tính averageRating
+                    totalReviews,
+                };
+            })
+        );
+
+        
+        const shuffledCourses = coursesWithRatings.sort(() => Math.random() - 0.5);
+
         return res.status(200).json({
-            courses,
+            courses: shuffledCourses,
         })
     } catch (error) {
         console.log(error);
@@ -193,6 +216,7 @@ export const editCourse = async (req, res) => {
     }
 }
 export const getCourseById = async (req, res) => {
+    
     try {
         const { courseId } = req.params;
 
@@ -247,6 +271,7 @@ export const createLecture = async (req, res) => {
     }
 }
 export const getCourseLecture = async (req, res) => {
+    
     try {
         const { courseId } = req.params;
         const course = await Course.findById(courseId).populate("lectures");
@@ -425,3 +450,141 @@ export const deleteCourse = async (req, res) => {
         });
     }
 };
+
+export const recommendCourses = async (req, res) => {
+    try {
+        const { courseId, courses } = req.body;
+        const course = await Course.findById(courseId);
+
+        const levelWeights = {
+            Beginner: 1,
+            Medium: 2,
+            Advance: 3,
+        };
+
+        const competencyLevels = {};
+        
+        // Tính toán tổng trọng số và số lượng cho mỗi danh mục
+        courses.forEach(course => {
+            const { courseDetail, completed } = course;
+            const { _id, category, courseLevel } = courseDetail;
+
+            if (!competencyLevels[category]) {
+                competencyLevels[category] = {
+                    totalWeight: 0,
+                    count: 0,
+                    _id: 0,
+                };
+            }
+
+            competencyLevels[category].totalWeight += levelWeights[courseLevel];
+            competencyLevels[category].count += 1;
+            competencyLevels[category]._id = _id;
+        });
+
+        // Tính toán cấp độ trung bình cho mỗi danh mục
+        const recommendations = [];        
+
+        const command = `python ai-model/predict.py "${course.courseTitle}" "${course.description}" "${course.courseLevel}"`;
+        const keywords = await new Promise((resolve, reject) => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error executing script: ${error}`);
+                    return reject(`Error: ${stderr}`);
+                }
+                try {
+                    // Chuyển đổi kết quả JSON về đối tượng JavaScript
+                    const result = JSON.parse(stdout);
+                    resolve(result);
+                } catch (parseError) {
+                    reject(`Error parsing JSON: ${parseError}`);
+                }
+            });
+        });
+
+        recommendations.push({
+            category: course.category,
+            level: course.courseLevel,
+            keywords: keywords
+        });
+
+        for (const category in competencyLevels) {
+            const courseCate = await Course.findById(competencyLevels[category]._id);
+            const { totalWeight, count } = competencyLevels[category];
+            const averageWeight = totalWeight / count;
+
+            const averageLevel = getLevelFromWeight(averageWeight);
+
+            // Gọi Python script để dự đoán từ khóa
+            const command = `python ai-model/predict.py "${courseCate.courseTitle}" "${courseCate.description}" "${averageLevel}"`;
+            const keywords = await new Promise((resolve, reject) => {
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`Error executing script: ${error}`);
+                        return reject(`Error: ${stderr}`);
+                    }
+                    try {
+                        // Chuyển đổi kết quả JSON về đối tượng JavaScript
+                        const result = JSON.parse(stdout);
+                        resolve(result);
+                    } catch (parseError) {
+                        reject(`Error parsing JSON: ${parseError}`);
+                    }
+                });
+            });
+
+            recommendations.push({
+                category,
+                level: averageLevel,
+                keywords: keywords
+            });
+        }
+
+
+        return res.status(200).json({
+            success: true,
+            recommendations: mergeKeyword(recommendations)
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to recommend courses"
+        });
+    }
+};
+
+const getLevelFromWeight = (weight) => {
+    if (weight < 1.5) return "Beginner";
+    if (weight < 2.5) return "Medium";
+    return "Advance";
+};
+
+const mergeKeyword = (recommendations) => {
+    const merged = {};
+    recommendations.forEach(course => {
+        const key = `${course.category}-${course.level}`;
+
+        if (!merged[key]) {
+            merged[key] = {
+                category: course.category,
+                level: course.level,
+                keywords: []
+            };
+        }
+        merged[key].keywords.push(...course.keywords.flat());
+    });
+
+    return Object.values(merged).map(item => ({
+        category: item.category,
+        level: item.level,
+        keywords: Array.from(new Set(item.keywords)) 
+    }));
+};
+
+// // Hàm giả định để gọi mô hình AI
+// const getKeywordsFromAIModel = async (category, level, courseTitle) => {
+//     // Đây là nơi bạn sẽ gọi mô hình AI và lấy từ khóa
+//     // Ví dụ, trả về một mảng từ khóa giả định
+//     return ["backend", "nodejs", "mongodb"]; // Thay thế bằng logic gọi AI thực tế
+// };

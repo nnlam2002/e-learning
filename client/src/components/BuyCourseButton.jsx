@@ -9,6 +9,7 @@ const BuyCourseButton = ({ courseId }) => {
     useCreateCheckoutSessionMutation();
 
   const purchaseCourseHandler = async () => {
+    localStorage.removeItem('recommendedCourses');
     await createCheckoutSession(courseId);
   };
 

@@ -48,13 +48,13 @@ const FeedbackSection = ({ courseId }) => {
   if (isLoading) return <p>Loading feedback...</p>;
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 bg-card text-card-foreground p-6 rounded-md shadow-sm">
       <h3 className="font-semibold text-lg mb-4">Feedback Section</h3>
-
+  
       {/* Form to add feedback */}
       <div className="mb-6">
         <h4 className="font-semibold text-lg">Write your feedback</h4>
-        <div className="flex items-center mt-2">
+          <div className="flex items-center mt-2">
           {[...Array(5)].map((_, i) => (
             <button
               key={i}
@@ -68,14 +68,14 @@ const FeedbackSection = ({ courseId }) => {
           ))}
         </div>
         <textarea
-          className="w-full border border-gray-300 rounded-md p-2 mt-2"
+          className="w-full border border-border rounded-md p-2 mt-2 bg-input text-foreground placeholder-muted-foreground"
           placeholder="Write your comment here..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
         <div className="flex items-center mt-4">
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
             onClick={handleSubmitFeedback}
           >
             Submit
@@ -135,7 +135,7 @@ const FeedbackSection = ({ courseId }) => {
           )}
         </div>
     </div>
-  );
+  );  
 };
 
 

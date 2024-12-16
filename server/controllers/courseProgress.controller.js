@@ -6,7 +6,7 @@ export const getCourseProgress = async (req, res) => {
     const { courseId } = req.params;
     const userId = req.id;
     // console.log(req.id);
-    
+
     // step-1 fetch the user course progress
     let courseProgress = await CourseProgress.findOne({
       courseId,
@@ -38,6 +38,44 @@ export const getCourseProgress = async (req, res) => {
         courseDetails,
         progress: courseProgress.lectureProgress,
         completed: courseProgress.completed,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getCoursesProgress = async (req, res) => {
+  try {
+    const userId = req.id;
+
+    let coursesProgress = await CourseProgress.find({ userId: userId }).populate("courseId");
+
+    const coursesDetails = [];
+    for (const courseProgress of coursesProgress) {
+      const course = await Course.findById(courseProgress.courseId);
+
+      if (!course) {
+        return res.status(404).json({
+          message: "Course not found",
+        });
+      }
+
+      coursesDetails.push(course);
+    }
+
+    if (!coursesProgress) {
+      return res.status(200).json({
+        data: {
+          progress: [],
+          completed: false,
+        },
+      });
+    }
+
+    return res.status(200).json({
+      data: {
+        coursesDetails,
+        coursesProgress
       },
     });
   } catch (error) {
@@ -101,7 +139,7 @@ export const updateLectureProgress = async (req, res) => {
 export const submitFeedback = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { rating, comment} = req.body;
+    const { rating, comment } = req.body;
     const userId = req.id;
     // const userName = req.nameUser
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -114,10 +152,19 @@ export const submitFeedback = async (req, res) => {
     });
 
     await review.save(); // Lưu review vào database
+    // Tính lại tổng số sao và số lượng feedback cho khóa học
+    const reviews = await Review.find({ courseId }); // Lấy tất cả reviews của khóa học
+    const totalStars = reviews.reduce((acc, review) => acc + review.star, 0);
+    const averageRating = reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+    const totalReviews = reviews.length;
+    await Course.findByIdAndUpdate(courseId, {
+      averageRating: parseFloat(averageRating),
+      totalReviews: totalReviews,
+    });
     res.status(201).json({ message: "Feedback saved successfully", review });
-  }catch(error){
+  } catch (error) {
     console.log(error);
-    
+
   }
 };
 export const getFeedback = async (req, res) => {
@@ -127,7 +174,7 @@ export const getFeedback = async (req, res) => {
     const feedbackList = await Review.find({ courseId })
       .populate("userId", "name photoUrl") // Thêm trường profilePicture
       .sort({ createdAt: -1 });
-    
+
     return res.status(200).json({
       success: true,
       feedback: feedbackList || [],
@@ -167,21 +214,21 @@ export const markAsCompleted = async (req, res) => {
 };
 
 export const markAsInCompleted = async (req, res) => {
-    try {
-      const { courseId } = req.params;
-      const userId = req.id;
-  
-      const courseProgress = await CourseProgress.findOne({ courseId, userId });
-      if (!courseProgress)
-        return res.status(404).json({ message: "Course progress not found" });
-  
-      courseProgress.lectureProgress.map(
-        (lectureProgress) => (lectureProgress.viewed = false)
-      );
-      courseProgress.completed = false;
-      await courseProgress.save();
-      return res.status(200).json({ message: "Course marked as incompleted." });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  try {
+    const { courseId } = req.params;
+    const userId = req.id;
+
+    const courseProgress = await CourseProgress.findOne({ courseId, userId });
+    if (!courseProgress)
+      return res.status(404).json({ message: "Course progress not found" });
+
+    courseProgress.lectureProgress.map(
+      (lectureProgress) => (lectureProgress.viewed = false)
+    );
+    courseProgress.completed = false;
+    await courseProgress.save();
+    return res.status(200).json({ message: "Course marked as incompleted." });
+  } catch (error) {
+    console.log(error);
+  }
+};

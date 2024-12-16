@@ -50,7 +50,16 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
-  		}
+  		},
+		keyframes: {
+			shimmer: {
+				'0%': { backgroundPosition: '-100%' },
+				'100%': { backgroundPosition: '0%' },
+			},
+		},
+		animation: {
+			shimmer: 'shimmer 3s infinite',
+		},
   	}
   },
   plugins: [require("tailwindcss-animate")],
