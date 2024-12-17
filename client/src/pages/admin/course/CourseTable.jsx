@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -12,54 +13,9 @@ import {
 } from "@/components/ui/table";
 import { useGetAllCourseQuery, useGetCreatorCourseQuery } from "@/features/api/courseApi";
 import { Edit } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
-// const invoices = [
-//   {
-//     invoice: "INV001",
-//     paymentStatus: "Paid",
-//     totalAmount: "$250.00",
-//     paymentMethod: "Credit Card",
-//   },
-//   {
-//     invoice: "INV002",
-//     paymentStatus: "Pending",
-//     totalAmount: "$150.00",
-//     paymentMethod: "PayPal",
-//   },
-//   {
-//     invoice: "INV003",
-//     paymentStatus: "Unpaid",
-//     totalAmount: "$350.00",
-//     paymentMethod: "Bank Transfer",
-//   },
-//   {
-//     invoice: "INV004",
-//     paymentStatus: "Paid",
-//     totalAmount: "$450.00",
-//     paymentMethod: "Credit Card",
-//   },
-//   {
-//     invoice: "INV005",
-//     paymentStatus: "Paid",
-//     totalAmount: "$550.00",
-//     paymentMethod: "PayPal",
-//   },
-//   {
-//     invoice: "INV006",
-//     paymentStatus: "Pending",
-//     totalAmount: "$200.00",
-//     paymentMethod: "Bank Transfer",
-//   },
-//   {
-//     invoice: "INV007",
-//     paymentStatus: "Unpaid",
-//     totalAmount: "$300.00",
-//     paymentMethod: "Credit Card",
-//   },
-// ];
 
 const CourseTable = () => {
   const { user } = useSelector((store) => store.auth);
@@ -67,11 +23,29 @@ const CourseTable = () => {
     ? useGetAllCourseQuery() 
     : useGetCreatorCourseQuery();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  if(isLoading) return <h1>Loading...</h1>
- 
+  if (isLoading) return <h1>Loading...</h1>;
+
+  // Filter courses based on search query
+  const filteredCourses = data.courses.filter(course => {
+    const titleMatch = course.courseTitle.toLowerCase().includes(searchQuery.toLowerCase());
+    const categoryMatch = course.category?.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+    const authorMatch = course.creator?.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return titleMatch || categoryMatch || authorMatch;
+  });
+
   return (
     <div>
+      <div className="flex items-center bg-white dark:bg-gray-800 rounded-full shadow-lg overflow-hidden max-w-xl mx-auto mb-6">
+        <Input
+          type="text"
+          placeholder="Search by title, category, or author..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-grow border-none focus-visible:ring-0 px-6 py-3 text-gray-900 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
+        />
+      </div>
       <Button onClick={() => navigate(`create`)}>Create a new course</Button>
       <Table>
         <TableCaption>A list of your recent courses.</TableCaption>
@@ -86,15 +60,15 @@ const CourseTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.courses.map((course) => (
+          {filteredCourses.map((course) => (
             <TableRow key={course._id}>
               <TableCell>{course.courseTitle}</TableCell>
               <TableCell>{course.category?.categoryName}</TableCell>
               <TableCell>{course.creator?.name}</TableCell>
               <TableCell className="font-medium">{course?.coursePrice || "NA"}</TableCell>
-              <TableCell> <Badge>{course.isPublished ? "Published" : "Draft"}</Badge> </TableCell>
+              <TableCell><Badge>{course.isPublished ? "Published" : "Draft"}</Badge></TableCell>
               <TableCell className="text-right">
-                 <Button size='sm' variant='ghost' onClick={() => navigate(`${course._id}`)}><Edit/></Button>
+                <Button size='sm' variant='ghost' onClick={() => navigate(`${course._id}`)}><Edit /></Button>
               </TableCell>
             </TableRow>
           ))}

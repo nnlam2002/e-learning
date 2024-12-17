@@ -65,7 +65,6 @@ const CourseFeedback = () => {
   }
 
   const feedbacks = data.feedback || [];
-  console.log(feedbacks);
   
   const averageRating =
     feedbacks.reduce((sum, fb) => sum + fb.star, 0) / feedbacks.length || 0;
@@ -165,9 +164,11 @@ const CourseDetail = () => {
   const params = useParams();
   const courseId = params.courseId;
   const navigate = useNavigate();
+  const { data: feedbackData, error: feedbackError, isLoading: isFeedbackLoading } = useGetFeedbackQuery(courseId);
+  console.log(feedbackData);
+  
   const { data, isLoading, isError } =
     useGetCourseDetailWithStatusQuery(courseId);
-  
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] = useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
 
@@ -175,7 +176,11 @@ const CourseDetail = () => {
   if (isError) return <h>Failed to load course details</h>;
 
   const { course, purchased } = data;
-
+  console.log(data);
+  
+  const averageRating =
+  feedbackData?.feedback?.reduce((sum, fb) => sum + fb.star, 0) /
+    (feedbackData?.feedback?.length || 1) || 0;
   const handleContinueCourse = () => {
     if (purchased) {
       navigate(`/course-progress/${courseId}`)
@@ -225,10 +230,13 @@ const CourseDetail = () => {
                 <p>Last updated {course?.createdAt.split("T")[0]}</p>
               </div>
               <p className="text-white">Students enrolled: {course?.enrolledStudents.length}</p>
-              <div className="flex items-center gap-1 mt-2"> {/* Giảm khoảng cách và xích lên */}
-                {renderStars(course?.averageRating)} {/* Gọi hàm renderStars để vẽ sao */}
-                <span className="text-white ml-2">({course?.totalReviews} feedbacks)</span>
+              <div className="flex items-center gap-1 mt-2">
+                {renderStars(averageRating || 0)} {/* Gọi hàm renderStars với dữ liệu mới */}
+                <span className="text-white ml-2">
+                  ({feedbackData?.feedback?.length || 0} feedbacks)
+                </span>
               </div>
+
             </div>
 
             <img

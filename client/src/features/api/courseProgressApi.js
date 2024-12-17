@@ -21,6 +21,12 @@ export const courseProgressApi = createApi({
         method: "GET",
       }),
     }),
+    getCoursesProgress: builder.query({
+      query: () => ({
+        url: "/",
+        method: "GET",
+      }),
+    }),
     updateLectureProgress: builder.mutation({
       query: ({ courseId, lectureId }) => ({
         url: `/${courseId}/lecture/${lectureId}/view`,
@@ -58,6 +64,7 @@ export const courseProgressApi = createApi({
 });
 export const {
 useGetCourseProgressQuery,
+useGetCoursesProgressQuery,
 useUpdateLectureProgressMutation,
 useCompleteCourseMutation,
 useInCompleteCourseMutation,

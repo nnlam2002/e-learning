@@ -30,6 +30,7 @@ import UserTable from "./pages/admin/user/UserTable";
 import AddInstructor from "./pages/admin/user/AddInstructor";
 import EditUser from "./pages/admin/user/EditUser";
 import AboutUs from "./pages/student/AboutUs";
+import Recommend from "./pages/student/Recommend";
 // import EditCategory from "./pages/admin/category/EditCategory";
 
 const appRouter = createBrowserRouter([
@@ -43,6 +44,7 @@ const appRouter = createBrowserRouter([
           <>
             <HeroSection />
             <Courses />
+            <Recommend />
           </>
         ),
       },

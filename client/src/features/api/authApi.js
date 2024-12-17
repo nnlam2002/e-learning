@@ -60,7 +60,8 @@ export const authApi = createApi({
                 } catch (error) {
                     console.log(error);
                 }
-            }
+            },
+            invalidatesTags: ['User'],
         }),
         loadUser: builder.query({
             query: () => ({

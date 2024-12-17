@@ -42,6 +42,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (isSuccess) {
+      localStorage.removeItem('recommendedCourses');
       toast.success(data?.message || "User log out.");
       navigate("/login");
     }
