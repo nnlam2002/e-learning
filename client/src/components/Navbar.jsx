@@ -1,4 +1,4 @@
-import { Menu, School } from "lucide-react";
+import { Menu, School, ShoppingCart} from "lucide-react";
 import React, { useEffect } from "react";
 import {
   DropdownMenu,
@@ -64,6 +64,12 @@ const Navbar = () => {
         <div className="flex items-center gap-8">
         <Link to="/about" className="text-lg font-medium hover:text-blue-600">
             About Us
+          </Link>
+          <Link to="/cart">
+            <ShoppingCart
+              size={24}
+              className="cursor-pointer hover:text-blue-600"
+            />
           </Link>
           {user ? (
             <DropdownMenu>

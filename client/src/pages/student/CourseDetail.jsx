@@ -176,7 +176,6 @@ const CourseDetail = () => {
   if (isError) return <h>Failed to load course details</h>;
 
   const { course, purchased } = data;
-  console.log(data);
   
   const averageRating =
   feedbackData?.feedback?.reduce((sum, fb) => sum + fb.star, 0) /
@@ -199,6 +198,10 @@ const CourseDetail = () => {
       videoUrl
     )
     setShowFreePreviewDialog(true)
+  }
+  const handleAddToCart = () =>{
+    console.log(course);
+    
   }
 
   return (
@@ -304,13 +307,20 @@ const CourseDetail = () => {
                   currency: 'USD',
                 }).format(course.coursePrice)}</h1>
             </CardContent>
-            <CardFooter className="flex justify-center p-4">
-              {purchased ? (
-                <Button onClick={handleContinueCourse} className="w-full">Continue Course</Button>
-              ) : (
-                <BuyCourseButton courseId={courseId} />
-              )}
-            </CardFooter>
+              <CardFooter className="flex flex-col items-center p-4 space-y-2">
+                {purchased ? (
+                  <Button onClick={handleContinueCourse} className="w-full">
+                    Continue Course
+                  </Button>
+                ) : (
+                  <>
+                    <BuyCourseButton courseId={courseId} className="w-full" />
+                    <Button onClick={handleAddToCart} className="w-full bg-blue-500 text-white hover:bg-blue-600">
+                      Add to Cart
+                    </Button>
+                  </>
+                )}
+              </CardFooter>
           </Card>
         </div>
       </div>
