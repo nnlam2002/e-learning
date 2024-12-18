@@ -136,6 +136,7 @@ export const courseApi = createApi({
         url: `/${courseId}?publish=${query}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["Refetch_Creator_Course"],
     }),
     removeCourse: builder.mutation({
       query: (courseId) => ({
