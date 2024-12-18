@@ -36,7 +36,7 @@ const Navbar = () => {
   };
   const handleLogoClick = () => {
     navigate("/");
-    window.location.reload(); // Reload lại trang khi click vào logo
+    // window.location.reload(); // Reload lại trang khi click vào logo
     
   };
 

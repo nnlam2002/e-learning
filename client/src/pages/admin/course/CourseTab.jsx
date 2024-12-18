@@ -67,12 +67,14 @@ const CourseTab = () => {
 
   useEffect(() => {
     if (courseByIdData?.course) {
+      console.log(courseByIdData?.course);
+      
       const course = courseByIdData?.course;
       setInput({
         courseTitle: course.courseTitle,
         subTitle: course.subTitle,
         description: course.description,
-        category: course.category._id,
+        category: course.category?._id,
         courseLevel: course.courseLevel,
         coursePrice: course.coursePrice,
         courseThumbnail: "",
