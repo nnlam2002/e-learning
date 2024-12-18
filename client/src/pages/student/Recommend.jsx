@@ -168,7 +168,7 @@ const Recommend = () => {
             };
 
             const filteredCourses = coursesData.filter(course =>
-                course.category._id === criteria.category &&
+                course.category?._id === criteria.category &&
                 levelMapping[criteria.level].includes(course.courseLevel)
             );
 
