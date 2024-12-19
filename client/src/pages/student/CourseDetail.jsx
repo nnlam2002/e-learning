@@ -1,6 +1,7 @@
 import BuyCourseButton from "@/components/BuyCourseButton";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -14,7 +15,7 @@ import {
 } from "@/features/api/courseProgressApi";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { useGetCourseDetailWithStatusQuery } from "@/features/api/purchaseApi";
+import { useGetCourseDetailWithStatusQuery,useAddCourseToCartMutation } from "@/features/api/purchaseApi";
 import { BadgeInfo, Lock, PlayCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
@@ -165,8 +166,7 @@ const CourseDetail = () => {
   const courseId = params.courseId;
   const navigate = useNavigate();
   const { data: feedbackData, error: feedbackError, isLoading: isFeedbackLoading } = useGetFeedbackQuery(courseId);
-  console.log(feedbackData);
-  
+  const [addCourseToCart] = useAddCourseToCartMutation();
   const { data, isLoading, isError } =
     useGetCourseDetailWithStatusQuery(courseId);
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] = useState(null);
@@ -199,10 +199,14 @@ const CourseDetail = () => {
     )
     setShowFreePreviewDialog(true)
   }
-  const handleAddToCart = () =>{
-    console.log(course);
-    
-  }
+  const handleAddToCart = async () => {
+    try {
+      await addCourseToCart(courseId).unwrap();
+      toast.success("Added to cart successfully!");
+    } catch (error) {
+      toast.error("This course had in cart.");
+    }
+  };
 
   return (
     <div className="space-y-5">

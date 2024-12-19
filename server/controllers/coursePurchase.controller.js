@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { Course } from "../models/course.model.js";
+import { Cart } from "../models/cart.model.js";
 import { CoursePurchase } from "../models/coursePurchase.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { User } from "../models/user.model.js";
@@ -75,7 +76,109 @@ export const createCheckoutSession = async (req, res) => {
     console.log(error);
   }
 };
+export const createCartCheckoutSession = async (req, res) => {
+  try {
+    const userId = req.id; // Lấy userId từ middleware xác thực
 
+    // Lấy các mục trong giỏ hàng của người dùng
+    const cartItems = await Cart.find({ userId }).populate("courseId");
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(400).json({ success: false, message: "Your cart is empty!" });
+    }
+
+    // Lấy danh sách khóa học từ các mục giỏ hàng
+    const courses = cartItems.map((item) => item.courseId);
+    if (!courses || courses.some((course) => !course || !course._id)) {
+      return res.status(400).json({ success: false, message: "Invalid courses in your cart." });
+    }
+
+    // Tạo `line_items` cho Stripe
+    const lineItems = courses.map((course) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: course.courseTitle,
+          images: [course.courseThumbnail],
+        },
+        unit_amount: Math.round(course.coursePrice * 100), // Giá theo cent
+      },
+      quantity: 1,
+    }));
+
+    // Tạo phiên thanh toán với Stripe
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: lineItems,
+      mode: "payment",
+      success_url: `http://localhost:5173/cart/success`,
+      cancel_url: `http://localhost:5173/cart`,
+      metadata: {
+        userId,
+        courseIds: JSON.stringify(courses.map((course) => course._id.toString())),
+      },
+    });
+
+    if (!session.url) {
+      return res.status(400).json({ success: false, message: "Error while creating session" });
+    }
+
+    // Lưu các khóa học vào bảng `CoursePurchase` với trạng thái "pending"
+    for (const course of courses) {
+      const existingPurchase = await CoursePurchase.findOne({ userId, courseId: course._id });
+      if (!existingPurchase) {
+        const newPurchase = new CoursePurchase({
+          courseId: course._id,
+          userId,
+          amount: course.coursePrice,
+          status: "pending",
+          paymentId: session.id,
+        });
+        await newPurchase.save();
+      }
+    }
+
+    return res.status(200).json({ success: true, url: session.url });
+  } catch (error) {
+    console.error("Error creating cart checkout session:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const addCourseToCart = async (req, res) => {
+  try {
+    const userId = req.id; // Giả sử `req.id` chứa ID của người dùng (middleware xác thực đã xử lý)
+    const { courseId } = req.body;
+
+    // Kiểm tra nếu khóa học đã tồn tại trong giỏ hàng của người dùng
+    const existingCartItem = await Cart.findOne({ userId, courseId });
+    if (existingCartItem) {
+      return res.status(400).json({
+        success: false,
+        message: "Course is already in the cart",
+      });
+    }
+
+    // Thêm khóa học vào giỏ hàng
+    const cartItem = new Cart({
+      userId,
+      courseId,
+    });
+
+    await cartItem.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Course added to cart successfully",
+      cartItem,
+    });
+  } catch (error) {
+    console.error("Error adding course to cart:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add course to cart",
+    });
+  }
+};
 export const stripeWebhook = async (req, res) => {
   let event;
 

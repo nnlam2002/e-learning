@@ -46,6 +46,19 @@ export const courseApi = createApi({
         method: "GET",
       }),
     }),
+    getCourseInCart: builder.query({
+      query: () => ({
+        url: "/cart",
+        method: "GET",
+      }),
+    }),
+    removeCourseFromCart: builder.mutation({
+    query: (courseId) => ({
+      url: `/cart/${courseId}`,
+      method: "DELETE",
+    }),
+    invalidatesTags: ["Cart"],
+  }),
     getFeedback: builder.query({
       query: () => ({
         url: "/published-courses",
@@ -158,6 +171,7 @@ export const {
   useCreateCourseMutation,
   useGetSearchCourseQuery,
   useGetPublishedCourseQuery,
+  useGetCourseInCartQuery,
   useGetFeedbackQuery,
   useGetCreatorCourseQuery,
   useGetCreatorCourseByIdQuery,
@@ -168,6 +182,7 @@ export const {
   useGetCourseLectureQuery,
   useEditLectureMutation,
   useRemoveLectureMutation,
+  useRemoveCourseFromCartMutation,
   useGetLectureByIdQuery,
   usePublishCourseMutation,
   useRemoveCourseMutation,

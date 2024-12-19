@@ -1,6 +1,7 @@
 
 import mongoose from "mongoose";
 import { Course } from "../models/course.model.js";
+import { Cart } from "../models/cart.model.js";
 import { Review } from "../models/review.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
@@ -75,7 +76,64 @@ export const searchCourse = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
+export const removeCourseFromCart = async (req, res) => {
+    try {
+      const userId = req.id; // Lấy ID người dùng từ token
+      const { courseId } = req.params; // Lấy courseId từ route params
+  
+      const deletedItem = await Cart.findOneAndDelete({ userId, courseId });
+  
+      if (!deletedItem) {
+        return res.status(404).json({
+          success: false,
+          message: "Course not found in cart",
+        });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Course removed from cart",
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to remove course from cart",
+      });
+    }
+  };  
+export const getCourseInCart = async (req, res) => {
+    try {
+      const userId = req.id; // Lấy userId từ middleware xác thực
+  
+      // Lấy danh sách courseId từ giỏ hàng của người dùng
+      const cartItems = await Cart.find({ userId }).populate({
+        path: "courseId",
+        select: "courseTitle subTitle coursePrice courseThumbnail averageRating totalReviews",
+      });
+    //   console.log(cartItems);
+      
+      // Trả về thông tin chi tiết các khóa học
+      return res.status(200).json({
+        success: true,
+        cartCourses: cartItems.map((item) => ({
+          courseId: item.courseId._id,
+          title: item.courseId.courseTitle,
+          subTitle: item.courseId.subTitle,
+          price: item.courseId.coursePrice,
+          thumbnail: item.courseId.courseThumbnail,
+          rating: item.courseId.averageRating,
+          reviews: item.courseId.totalReviews,
+        })),
+      });
+    } catch (error) {
+      console.error("Error fetching courses in cart:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to get courses in cart",
+      });
+    }
+  };
 
 export const getPublishedCourse = async (_, res) => {
     try {
