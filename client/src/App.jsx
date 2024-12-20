@@ -31,6 +31,7 @@ import AddInstructor from "./pages/admin/user/AddInstructor";
 import EditUser from "./pages/admin/user/EditUser";
 import AboutUs from "./pages/student/AboutUs";
 import Recommend from "./pages/student/Recommend";
+import CourseCart from "./pages/student/Cart";
 // import EditCategory from "./pages/admin/category/EditCategory";
 
 const appRouter = createBrowserRouter([
@@ -62,6 +63,14 @@ const appRouter = createBrowserRouter([
           <AuthenticatedUser>
             <Login />
           </AuthenticatedUser>
+        ),
+      },
+      {
+        path: "cart",
+        element: (
+          <ProtectedRoute>
+            <CourseCart />
+          </ProtectedRoute>
         ),
       },
       {

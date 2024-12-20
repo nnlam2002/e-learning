@@ -18,6 +18,14 @@ export const purchaseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Purchased_Course"],
     }),
+    createCartCheckoutSession: builder.mutation({
+      query: (courseIds) => ({
+        url: "/checkout/create-cart-checkout-session",
+        method: "POST",
+        body: { courseIds },
+      }),
+      invalidatesTags: ["Refetch_Purchased_Course"],
+    }),
     getCourseDetailWithStatus: builder.query({
       query: (courseId) => ({
         url: `/course/${courseId}/detail-with-status`,
@@ -32,11 +40,21 @@ export const purchaseApi = createApi({
       }),
       providesTags: ["Refetch_Purchased_Course"],
     }),
+    addCourseToCart: builder.mutation({
+      query: (courseId) => ({
+        url: `/add-to-cart`,
+        method: "POST",
+        body: { courseId }
+      }),
+    }),
   }),
 });
 
 export const {
   useCreateCheckoutSessionMutation,
+  useCreateCartCheckoutSessionMutation,
   useGetCourseDetailWithStatusQuery,
   useGetPurchasedCoursesQuery,
+  useAddCourseToCartMutation,
+
 } = purchaseApi;
