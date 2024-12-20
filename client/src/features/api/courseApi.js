@@ -18,27 +18,33 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
-    getSearchCourse:builder.query({
-      query: ({searchQuery, categories, sortByPrice}) => {
-        // Build qiery string
-        let queryString = `/search?query=${encodeURIComponent(searchQuery)}`
-
-        // append cateogry 
-        if(categories && categories.length > 0) {
+    getSearchCourse: builder.query({
+      query: ({ searchQuery, categories, sortByPrice, courseLevel }) => {
+        // Build query string
+        let queryString = `/search?query=${encodeURIComponent(searchQuery)}`;
+    
+        // Append categories if available
+        if (categories && categories.length > 0) {
           const categoriesString = categories.map(encodeURIComponent).join(",");
-          queryString += `&categories=${categoriesString}`; 
+          queryString += `&categories=${categoriesString}`;
         }
-
-        // Append sortByPrice is available
-        if(sortByPrice){
-          queryString += `&sortByPrice=${encodeURIComponent(sortByPrice)}`; 
+    
+        // Append sortByPrice if available
+        if (sortByPrice) {
+          queryString += `&sortByPrice=${encodeURIComponent(sortByPrice)}`;
         }
-
+    
+        // Append courseLevel if available
+        if (courseLevel && courseLevel.length > 0) {
+          const courseLevelString = courseLevel.map(encodeURIComponent).join(",");
+          queryString += `&courseLevel=${courseLevelString}`;
+        }
+    
         return {
-          url:queryString,
-          method:"GET", 
-        }
-      }
+          url: queryString,
+          method: "GET",
+        };
+      },
     }),
     getPublishedCourse: builder.query({
       query: () => ({

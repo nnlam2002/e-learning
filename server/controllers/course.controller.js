@@ -35,7 +35,7 @@ export const createCourse = async (req, res) => {
 
 export const searchCourse = async (req, res) => {
     try {
-        const { query = "", categories = "", sortByPrice = "" } = req.query;
+        const { query = "", categories = "", sortByPrice = "", courseLevel = "" } = req.query;
 
         const categoryArray = categories
             ? categories.split(",").map((id) => new mongoose.Types.ObjectId(id.trim()))
@@ -50,8 +50,15 @@ export const searchCourse = async (req, res) => {
             ],
         };
 
+        // Filter by categories if provided
         if (categoryArray.length > 0) {
             searchCriteria.category = { $in: categoryArray };
+        }
+
+        // Filter by courseLevel if provided
+        if (courseLevel) {
+            const levels = courseLevel.split(",").map(level => level.trim());
+            searchCriteria.courseLevel = { $in: levels };
         }
 
         // Define sorting order

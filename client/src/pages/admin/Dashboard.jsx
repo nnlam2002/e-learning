@@ -81,7 +81,7 @@ const Dashboard = () => {
               <XAxis
                 dataKey="name"
                 stroke="#6b7280"
-                angle={-5} // Rotated labels for better visibility
+                angle={-30} // Rotated labels for better visibility
                 textAnchor="middle"
                 interval={0} // Display all labels
                 tick={{ fontSize: '8px' }}
