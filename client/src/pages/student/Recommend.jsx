@@ -22,7 +22,7 @@ const Recommend = () => {
 
     const coursesProgress = courses?.data?.coursesProgress;
     const coursesDetails = courses?.data?.coursesDetails;
-
+    
     const fetchCompletedCourses = async () => {
 
         const combinedCourses = await coursesProgress?.map(progress => {
@@ -37,7 +37,7 @@ const Recommend = () => {
         setCompletedCourses(completedCourses)
     };
 
-    const handleRecommend = async () => {
+    const handleRecommend = async () => { 
         if (cachedData) {
             const completedCourseIds = new Set(coursesProgress?.map(progress => progress.courseId));
             const coursesData = data?.courses?.filter(course => !completedCourseIds.has(course._id));
