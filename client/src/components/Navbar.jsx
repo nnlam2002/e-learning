@@ -32,6 +32,7 @@ const Navbar = () => {
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
   const navigate = useNavigate();
   const logoutHandler = async () => {
+    localStorage.removeItem("recommendedCourses");
     await logoutUser();
   };
   const handleLogoClick = () => {
